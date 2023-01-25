@@ -10,8 +10,8 @@ class RawData(DBModel):
     content = Column(LONGTEXT, nullable=False)
 
 
-class Order(DBModel):
-    __tablename__ = "order"
+class Orders(DBModel):
+    __tablename__ = "orders"
     __table_args__ = {'extend_existing': True}
 
     order_id = Column(String(50), nullable=False)
