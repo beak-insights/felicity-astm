@@ -10,7 +10,7 @@ class DBOrderHandler:
         filters = {
             'order_id': order["order_id"]
         }
-        found = Order.get(**filters).all()
+        found = Order.get(**filters)
         if found:
             logger.log(
                 "info", f"order with the same order_id is already persisted, skipping ... {order}")

@@ -36,6 +36,9 @@ def start_server(port, baudrate=9600, handler=None):
                 # Does the receiver has to send something back?
                 response = handler.read()
                 if response:
+                    if isinstance(response, str):
+                        # convert to bytes
+                        response = response.encode()
                     socket = serial.Serial(port, baudrate, timeout=10)
                     socket.write(to_bytes(response))
 

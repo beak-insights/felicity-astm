@@ -24,6 +24,7 @@ class Order(DBModel):
     comment = Column(String(255), nullable=True)
     is_sync_allowed = Column(Boolean, nullable=False, default=True)
     synced = Column(Boolean, nullable=False, default=False)
+    sync_date = Column(String(25), nullable=True)
     sync_comment = Column(String(255), nullable=True)
     raw_data_uid = Column(
         Integer,

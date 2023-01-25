@@ -7,21 +7,21 @@ logger = Logger(__name__, __file__)
 
 
 #: Message start token.
-STX = b'\x02'
+STX = '\x02'
 #: Message end token.
-ETX = b'\x03'
+ETX = '\x03'
 #: ASTM session termination token.
-EOT = b'\x04'
+EOT = '\x04'
 #: ASTM session initialization token.
-ENQ = b'\x05'
+ENQ = '\x05'
 #: Command accepted token.
-ACK = b'\x06'
+ACK = '\x06'
 #: Command rejected token.
-NAK = b'\x15'
+NAK = '\x15'
 #: Message chunk end token.
-ETB = b'\x17'
-LF = b'\x0A'
-CR = b'\x0D'
+ETB = '\x17'
+LF = '\x0A'
+CR = '\x0D'
 #: CR + LF shortcut.
 CRLF = CR + LF
 
@@ -70,7 +70,8 @@ class Message(object):
             logger.log("info", " No valid frame: FN is not consecutive")
             return False
         if self.is_complete():
-            logger.log("info", " No valid frame: Message is complete")
+            logger.log("info", "No valid frame: Message is complete")
+            return True
         return not self.is_complete()
 
     def is_complete(self):
@@ -305,7 +306,7 @@ class ASTMHandler(MessageHandler):
         return command
 
     def write(self, command):
-        logger.log("debug", f"-> {self.to_str(command)}")
+        logger.log("info", f"-> {self.to_str(command)}")
         if command == ENQ:
             # Initiate establishment phase
             self.handle_enq()
@@ -404,7 +405,7 @@ class ASTMHandler(MessageHandler):
         logger.log("info", "Transfer phase completed")
         message = self.current_message
         if message and message.is_incomplete():
-            logger.warn("Incomplete message:")
+            logger.log("info", "Incomplete message:")
             self.notify_message(message)
 
         self.response = ACK
@@ -434,16 +435,15 @@ class ASTMTOrderHandler(ASTMHandler):
 
     def handle_eot(self, command):
         logger.log("info", "Transfer phase completed")
-        logger.warn("Sending message to Result Repository ...")
         message = self.current_message
         if message and message.is_incomplete():
             # Don't push to result repository. This is an incomplete message!
-            logger.error("[SKIP] Incomplete message:")
+            logger.log("error", "[SKIP] Incomplete message:")
             super(ASTMTOrderHandler, self).notify_message(message)
 
         elif not self._received_messages:
             # Don't push to result repository. There are no messages to send
-            logger.warn("[SKIP] There is no message to send")
+            logger.log("warn", "[SKIP] There is no message to send")
             super(ASTMTOrderHandler, self).notify_message(message)
 
         else:
@@ -464,7 +464,7 @@ class ASTMTOrderHandler(ASTMHandler):
             self._received_messages.append(message.text())
 
     def push_to_order_repository(self, messages):
-        if isinstance(messages, basestring):
+        if isinstance(messages, str):
             messages = [messages]
 
         result_repository = OrderRepository()

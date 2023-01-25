@@ -91,3 +91,11 @@ class DBModel(AllFeaturesMixin, TimestampsMixin):
             results = session.execute(stmt)
             found = results.scalars().first()
         return found
+
+    @classmethod
+    def get_all(cls, **kwargs):
+        stmt = cls.where(**kwargs)
+        with Session(engine) as session:
+            results = session.execute(stmt)
+            _all = results.scalars().all()
+        return _all
