@@ -6,12 +6,24 @@ This package provides a command line interface for:
 
 ## Setup
 
-Make sure you have Mysql/MariDb installed
+Make sure you have Mysql/MariaDb installed
 
-It is encouraged to use Python 3 and pip3 for this project. It wont work with python 2:
+    create databse create database db_name;
+
+    # create user if you are using mysql: 
+    create user 'username'@'%' identified with mysql_native_password by '<password>'; 
+    GRANT ALL PRIVILEGES ON db_name.* TO 'username'@'%';
+    
+    # create user if you are using mariadb 
+    grant all privileges on databse_name.* TO 'username'@'%' identified by '<password>';
+
+    finally fush privileges
+    
+
+Make sure you have installed python 3.9.5 or higher and pip3 for this project:
 
     $ python3 --version
-    Python 3.+
+    Python 3.X
     
     git clone https://github.com/NMRL-Zimbabwe/astm-to-db.git
     cd astm-to-db && sudo su
