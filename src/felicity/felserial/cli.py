@@ -2,11 +2,16 @@
 
 import argparse
 import sys
+from concurrent.futures import ThreadPoolExecutor
 
 import serial
 from serial.tools import list_ports
 from serial.serialutil import to_bytes
 from felicity.felserial.astm import ASTMTOrderHandler
+from felicity.forward import start_fowading
+
+from felicity.logger import Logger
+logger = Logger(__name__, __file__)
 
 """Serial Command Line Tools
 
@@ -15,9 +20,17 @@ Usage: serial --help
 """
 
 
+def run_in_parallel(tasks):
+    with ThreadPoolExecutor() as executor:
+        running_tasks = [executor.submit(task) for task in tasks]
+        for running_task in running_tasks:
+            running_task.result()
+
+
 def start_server(port, baudrate=9600, handler=None):
     """Start serial server
     """
+
     if handler is None:
         handler = ASTMTOrderHandler()
 
@@ -79,23 +92,9 @@ def main():
         list_ports.main()
         sys.exit(0)
 
-    # Start the server
+    # Start the servers
     if args.server:
-        start_server(args.port)
-
-
-def trial():
-    from felicity.felserial.repository import OrderRepository
-    msg = """
-    H|\^&|||m2000^8.1.9.0^275022112^H1P1O1R1C1L1|||||||P|1|20190903162134
-    P|1
-    O|1|DBS19-002994|DBS19-002994^WS19-2459^D1|^^^HIV1mlDBS^HIV1.0mlDBS|||||||||||||||||||||F
-    R|1|^^^HIV1mlDBS^HIV1.0mlDBS^489932^11790271^^F|< 839|Copies / mL||||R||naralabs^naralabs||20190902191654|275022112
-    R|2|^^^HIV1mlDBS^HIV1.0mlDBS^489932^11790271^^I|Detected|||||R||naralabs^naralabs||20190902191654|275022112
-    R|3|^^^HIV1mlDBS^HIV1.0mlDBS^489932^11790271^^P|28.21|cycle number||||R||naralabs^naralabs||20190902191654|275022112
-    """
-    OrderRepository().handle_order_message(msg)
-
-
-if __name__ == "__main__":
-    trial()
+        run_in_parallel([
+            lambda: start_server(args.port),
+            lambda: start_fowading()
+        ])

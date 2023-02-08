@@ -26,9 +26,13 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[
-        "pyserial==3.5",
-        "alembic==1.9.2",
-        "sqlalchemy==1.4.31"
+        "pyserial",
+        "alembic",
+        "pymysql",
+        "pandas",
+        "requests",
+        "sqlalchemy",
+        "schedule"
     ],
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
