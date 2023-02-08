@@ -11,6 +11,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 from felicity.config import (
     SENAITE_BASE_URL,
+    SENAITE_API_URL,
     SENAITE_USER,
     SENAITE_PASSWORD,
     VERIFY_RESULT,
@@ -43,11 +44,11 @@ class FowardOrderHandler:
     def fetch_astm_results(self):
         logger.log("info", f"AstmOrderHandler: Fetching astm result orders ...")
         select_stmt = text(
-            """select * from orders where synced=0 and result not in ("Invalid", "ValueNotSet")"""
+            """select *, o.uid as id from orders o where synced=0 and result not in ("Invalid", "ValueNotSet")"""
         )
         if SEND_TO_QUEUE:
             select_stmt = text(
-                """select * from orders o inner join raw_data r on o.raw_data_uid=r.uid where synced=0 and result not in ("Invalid", "ValueNotSet")"""
+                """select *, o.uid as id from orders o inner join raw_data r on o.raw_data_uid=r.uid where synced=0 and result not in ("Invalid", "ValueNotSet")"""
             )
 
         with Session(engine) as session:
@@ -88,7 +89,7 @@ class SenaiteHandler:
     def __init__(self):
         self.username = SENAITE_USER
         self.password = SENAITE_PASSWORD
-        self.base_url = SENAITE_BASE_URL
+        self.api_url = SENAITE_API_URL
         self.also_verify = VERIFY_RESULT
 
     def _auth_session(self):
@@ -99,7 +100,7 @@ class SenaiteHandler:
 
     def test_senaite_connection(self) -> bool:
         self._auth_session()
-        url = f"{self.base_url}"
+        url = f"{self.api_url}/"
         try:
             response = self.session.post(url)
             if response.status_code == 200:
@@ -133,7 +134,7 @@ class SenaiteHandler:
         @return dict
         """
         # searching using an ID.
-        search_url = f"{self.base_url}search?getRequestID={request_id}&catalog=bika_analysis_catalog"
+        search_url = f"{self.api_url}/search?getRequestID={request_id}&catalog=bika_analysis_catalog"
         logger.log(
             "info", f"SenaiteHandler: Searching for analysis with getRequestID {request_id}")
         response = self.session.get(search_url)
@@ -146,7 +147,7 @@ class SenaiteHandler:
 
     def update_resource(self, uid, payload):
         """ create a new resource in senaite: single or bundled """
-        url = f"{self.base_url}update/{uid}"
+        url = f"{self.api_url}/update/{uid}"
         logger.log("info", f"SenaiteHandler: Updating resource: {url}")
         response = self.session.post(url, json=payload)
         if response.status_code == 200:
@@ -212,7 +213,8 @@ class SenaiteHandler:
 class SenaiteQueuer:
 
     def __init__(self):
-        self.url = SENAITE_BASE_URL
+        self.base_url = SENAITE_BASE_URL
+        self.api_url = SENAITE_API_URL
         self.session = None
         self.start_session(SENAITE_USER, SENAITE_PASSWORD)
 
@@ -224,7 +226,8 @@ class SenaiteQueuer:
         # try to get the version of the remote JSON API
         version = self.get_version()
         if not version or not version.get('version'):
-            logger.log("error", f"senaite.jsonapi not found on at {self.url}")
+            logger.log(
+                "error", f"senaite.jsonapi not found on at {self.api_url}")
             return False
 
         # try to get the current logged in user
@@ -234,7 +237,7 @@ class SenaiteQueuer:
             return False
 
         logger.log(
-            "info", f"Session established ('{username}') with '{self.url}'")
+            "info", f"Session established ('{username}') with '{self.base_url}'")
         return True
 
     def send_message(self, message):
@@ -243,7 +246,7 @@ class SenaiteQueuer:
             logger.log("info", "Session not started yet")
             return False
 
-        url_import = f"{self.url}serial_push"
+        url_import = f"{self.base_url}/serial_push"
         response = self.session.post(url_import,
                                      data={"message": message},
                                      timeout=30)
@@ -263,11 +266,11 @@ class SenaiteQueuer:
         """
         return self.get_first_item("users/current")
 
-    def get_first_item(self, url_or_endpoint, **kw):
+    def get_first_item(self, endpoint, **kw):
         """Fetch the first item of the 'items' list from a std. JSON API reponse
         """
         items = self.get_items_with_retry(
-            url_or_endpoint=url_or_endpoint, **kw)
+            endpoint=endpoint, **kw)
         if not items:
             return None
         return items[0]
@@ -283,25 +286,25 @@ class SenaiteQueuer:
         """
         items = None
         for i in range(max_attempts):
-            items = self.get_items(kwargs.get("url_or_endpoint", None))
+            items = self.get_items(kwargs.get("endpoint", None))
             if items:
                 break
             sleep(interval)
         return items
 
-    def get_items(self, url_or_endpoint):
+    def get_items(self, endpoint):
         """
         Return the 'items' list from a std. JSON API response
         """
-        data = self.get_json(url_or_endpoint)
+        data = self.get_json(endpoint)
         if not isinstance(data, dict):
             return []
         return data.get("items", [])
 
-    def get_json(self, url_or_endpoint):
+    def get_json(self, endpoint):
         """Fetch the given url or endpoint and return a parsed JSON object
         """
-        api_url = self.get_api_url(url_or_endpoint)
+        api_url = self.get_api_url(endpoint)
         try:
             response = self.session.get(api_url)
         except Exception as e:
@@ -311,25 +314,17 @@ class SenaiteQueuer:
             return {}
         status = response.status_code
         if status != 200:
-            message = f"GET for {url_or_endpoint} ({api_url}) returned Status Code {status}. Please check."
+            message = f"GET for {endpoint} ({api_url}) returned Status Code {status}. Please check."
             logger.log("error", message)
             return {}
         return response.json()
 
-    def get_api_url(self, url_or_endpoint):
-        """Create an API URL from an endpoint or absolute url
-        """
-        # Nothing to do if we have no base URL
-        if self.url is None:
-            raise AttributeError("No base URL found")
-        # Convert to an absolute URL
-        if not url_or_endpoint.startswith(self.url):
-            url_or_endpoint = "/".join([
-                self.url,
-                "/".join(url_or_endpoint.split("/"))
-            ])
-        # Handle request parameters
-        return url_or_endpoint
+    def get_api_url(self, endpoint):
+        """Create an API URL from an endpoint"""
+        return "/".join([
+            self.api_url,
+            "/".join(endpoint.split("/"))
+        ])
 
 
 class ResultInterface(FowardOrderHandler, SenaiteHandler):
@@ -343,16 +338,16 @@ class ResultInterface(FowardOrderHandler, SenaiteHandler):
             logger.log("info", f"AstmOrderHandler: No orders at the moment :)")
 
         for index, order in orders.iterrows():
-            if SEND_TO_QUEUE:
-                logger.log(
-                    "info", f"ResultInterface: Sending to senaite serial ...")
-                SenaiteQueuer().send_message(order.content)
-            else:
-                if index > 0 and index % SLEEP_SUBMISSION_COUNT == 0:
-                    logger.log("info", f"ResultInterface:  ---sleeping---")
-                    time.sleep(SLEEP_SECONDS)
-                    logger.log("info", f"ResultInterface:  ---waking---")
+            if index > 0 and index % SLEEP_SUBMISSION_COUNT == 0:
+                logger.log("info", f"ResultInterface:  ---sleeping---")
+                time.sleep(SLEEP_SECONDS)
+                logger.log("info", f"ResultInterface:  ---waking---")
 
+            senaite_updated = False
+            if SEND_TO_QUEUE:
+                senaite_updated = SenaiteQueuer(
+                ).send_message(order['content'])
+            else:
                 # Parse the result object before sending to LIMS
                 result_parser = ResultParser(order["result"], order["unit"])
                 result = str(result_parser.output)
@@ -373,6 +368,6 @@ class ResultInterface(FowardOrderHandler, SenaiteHandler):
                         result,
                         order["keywork"]
                     )
-
-                if senaite_updated:
-                    self.update_astm_result(order["uid"], 1)
+            #
+            if senaite_updated:
+                self.update_astm_result(order["id"], 1)

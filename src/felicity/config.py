@@ -9,7 +9,8 @@ DB_HOST = "localhost:3306"
 
 # Forward app settings
 SENAITE_HOST = "192.168.0.32:80"
-SENAITE_BASE_URL = f"http://{SENAITE_HOST}/senaite/@@API/senaite/v1/"
+SENAITE_BASE_URL = f"http://{SENAITE_HOST}/senaite"
+SENAITE_API_URL = f"{SENAITE_BASE_URL}/@@API/senaite/v1"
 SENAITE_USER = "system_daemon"
 SENAITE_PASSWORD = "s89Ajs-UIas!3k"
 
