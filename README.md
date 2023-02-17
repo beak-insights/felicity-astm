@@ -36,12 +36,14 @@ Make sure you have installed python 3.9.5 or higher and pip3 for this project:
 Update configs 
 
     cd astm-improved/src/felicity/
-    nano config.py  and update as necessary
+    nano config.py  # and update as necessary
+    
 
 
 Make sure you have a working database before proceeding to this step
 
-    # from inside astm-improved/src/felicity/ do
+    # Run alembic migrations to generate our database tables
+    cd astm-improved/src/felicity/
     bash ./al_upgrade.sh
 
 
@@ -57,12 +59,16 @@ ALl should be up by now: Check
     
     
 Setup supervisor for easier script management manager
+
     # install
     sudo apt update && sudo apt install supervisor
+    
     # check status
     sudo systemctl status supervisor
+    
     # add programs
     sudo nano /etc/supervisor/conf.d/astm_serial.conf
+    
     # add any of the following programs based onavailable serial devices 
     [program:serial_usb0]
     command=/usr/bin/python3 /usr/local/bin/serial -s -p /dev/ttyUSB0
