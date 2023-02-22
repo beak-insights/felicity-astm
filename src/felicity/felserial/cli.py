@@ -9,6 +9,7 @@ from serial.tools import list_ports
 from serial.serialutil import to_bytes
 from felicity.felserial.astm import ASTMTOrderHandler
 from felicity.forward import start_fowading
+from felicity.dashboard.panel import start_dashboard
 
 from felicity.logger import Logger
 logger = Logger(__name__, __file__)
@@ -84,6 +85,27 @@ def main():
         help="List available ports"
     )
 
+    parser.add_argument(
+        "-f",
+        "--forward",
+        action="store_true",
+        help="Foward Results to LIMS"
+    )
+
+    parser.add_argument(
+        "-d",
+        "--dashboard",
+        action="store_true",
+        help="Start Admin Dashboard"
+    )
+
+    parser.add_argument(
+        "-a",
+        "--all",
+        action="store_true",
+        help="Start All"
+    )
+
     args = parser.parse_args()
 
     # List available ports
@@ -94,9 +116,22 @@ def main():
 
     # Start the servers
     if args.server:
+        start_server(args.port)
+
+    # Start the forwarder: serial -f
+    if args.forward:
+        start_fowading()
+
+    # run admin interface: serial -d
+    if args.dashboard:
+        start_dashboard()
+
+    # run all: for sites with a single maching connected: serial -a -p /dev/ttyUSB0
+    if args.all:
         run_in_parallel([
             lambda: start_server(args.port),
-            lambda: start_fowading()
+            lambda: start_fowading(),
+            lambda: start_dashboard()
         ])
 
 
