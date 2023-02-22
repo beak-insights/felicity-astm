@@ -194,6 +194,7 @@ class AbbotM2000ASTMAdapter(ASTMBaseAdapter):
         data["keyword"] = self.results_record["TestID"]
         data["result"] = self.results_record["Measurement"]
         data["capture_date"] = self.results_record["DateTimeTestCompleted"]
+        data["raw_message"] = self.message
         # If Final Result is "Not detected", store the Interpreted Result
         if data["result"] == "Not detected":
             data["result"] = "Target not detected"

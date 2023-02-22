@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from collections import OrderedDict
 from felicity.logger import Logger
-from felicity.felserial.converter.adapter import astm_adapters
+from felicity.felserial.converter.adapter import astm_adapters, hl7_adapters
 
 logger = Logger(__name__, __file__)
 
@@ -11,10 +11,10 @@ class ASTMSerialHandler:
     def process(self, message):
         # Message can contain multiple headers (one per Sample). In such case,
         # we need to process them independently
-        blocks = self.split_message_blocks(message)
+        protocol, blocks = self.split_message_blocks(message)
 
         # Skip messages without result record (R)
-        blocks = list(filter(lambda b: "R|" in b, blocks))
+        blocks = list(filter(lambda b: "R|" in b or "OBX|" in b, blocks))
 
         # Remove empties and duplicates while keeping the order
         blocks = list(filter(None, blocks))
@@ -22,21 +22,29 @@ class ASTMSerialHandler:
 
         msgs = []
         for block in blocks:
-            msgs += self.adapt_message(block)
+            msgs += self.adapt_message(block, protocol)
         return msgs
 
     def split_message_blocks(self, message):
         split = "H|\^&|"
+        protocol = "astm"
+        if "MSH|^~\&" in message:
+            split = "MSH|^~\&"
+            protocol = "hl7"
         blocks = list(filter(None, message.strip().split(split)))
         blocks = list(
             map(lambda msg: "{}{}".format(split, msg.strip()), blocks))
-        return list(filter(None, blocks))
+        return protocol, list(filter(None, blocks))
 
-    def get_adapter(self, message):
+    def get_adapter(self, message, protocol):
         """Looks for a suitable subscriber adapters for the message passed in
         """
         # We only want the adapters that can read the message
-        adapters = list(map(lambda ad: ad(message), astm_adapters))
+        if protocol == "astm":
+            adapters = astm_adapters
+        else:
+            adapters = hl7_adapters
+        adapters = list(map(lambda ad: ad(message), adapters))
         adapters = list(filter(lambda ad: ad.is_supported(), adapters))
 
         if not adapters:
@@ -48,22 +56,22 @@ class ASTMSerialHandler:
 
         return adapters[0]
 
-    def adapt_message(self, message):
+    def adapt_message(self, message, protocol):
         """Imports the message's results to Senaite
         """
         msg = len(message) > 50 and "{}...".format(message[:47]) or message
         logger.log("info", "Importing message: {}".format(msg))
-        adapter = self.get_adapter(message)
+        adapter = self.get_adapter(message, protocol)
 
         if not adapter:
-            logger.error("No adapters found for message: {}".format(msg))
+            logger.log("error", "No adapters found for message: {}".format(msg))
             return False
 
         # Read the message
         data = adapter.read()
 
         if not data:
-            logger.error("No data found for message: {}".format(msg))
+            logger.log("error", "No data found for message: {}".format(msg))
             return False
 
         if isinstance(data, dict):

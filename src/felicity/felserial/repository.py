@@ -17,10 +17,18 @@ class OrderRepository:
         payloads = self.converter.process(message)
         if isinstance(payloads, dict):
             payloads = [payloads]
+
+        # persist raw_data
+        rawdata_uid = self.database.persist_raw(message)
+
+        # persist message splits as orders
         for order in payloads:
             order = self._to_order(order)
-            logger.log("info", f"order for db {order}")
-            self.database.persist_order(order, message)
+            order_id = order.get("id", None)
+            order_result = order.get("result", None)
+            logger.log(
+                "info", f"order for db:: order_id -> {order_id} -> result -> {order_result}")
+            self.database.persist_order(order, rawdata_uid)
 
     @staticmethod
     def _to_order(message):
@@ -30,7 +38,8 @@ class OrderRepository:
             "test_id": id,
             "keywork": message.get("keyword"),
             "result": message.get("result"),
-            "result_date": message.get("capture_date")
+            "result_date": message.get("capture_date"),
+            "raw_message": message.get("raw_message")
         }
 
     @property

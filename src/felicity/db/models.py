@@ -26,6 +26,7 @@ class Orders(DBModel):
     synced = Column(Boolean, nullable=False, default=False)
     sync_date = Column(String(25), nullable=True)
     sync_comment = Column(String(255), nullable=True)
+    raw_message = Column(LONGTEXT, nullable=True)
     raw_data_uid = Column(
         Integer,
         ForeignKey("raw_data.uid", ondelete="CASCADE"),

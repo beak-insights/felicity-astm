@@ -150,5 +150,6 @@ class PantherASTMAdapter(ASTMBaseAdapter):
             data["keyword"] = ad.results_record["TestID"]
             data["result"] = ad.results_record["Measurement"]
             data["capture_date"] = ad.results_record["DateTimeTestCompleted"]
+            data["raw_message"] = msg
             out_data.append(data)
         return out_data
