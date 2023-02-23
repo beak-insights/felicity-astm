@@ -44,12 +44,8 @@ class FowardOrderHandler:
     def fetch_astm_results(self):
         logger.log("info", f"AstmOrderHandler: Fetching astm result orders ...")
         select_stmt = text(
-            """select *, o.uid as id from orders o where synced=0 and result not in ("Invalid", "ValueNotSet")"""
+            """select * from orders o where synced=0 and result not in ("Invalid", "ValueNotSet")"""
         )
-        if SEND_TO_QUEUE:
-            select_stmt = text(
-                """select *, o.uid as id from orders o inner join raw_data r on o.raw_data_uid=r.uid where synced=0 and result not in ("Invalid", "ValueNotSet")"""
-            )
 
         with Session(engine) as session:
             result = session.execute(select_stmt)
@@ -348,7 +344,7 @@ class ResultInterface(FowardOrderHandler, SenaiteHandler):
             senaite_updated = False
             if SEND_TO_QUEUE:
                 senaite_updated = SenaiteQueuer(
-                ).send_message(order['content'])
+                ).send_message(order['raw_message'])
             else:
                 # Parse the result object before sending to LIMS
                 result_parser = ResultParser(order["result"], order["unit"])
@@ -372,4 +368,4 @@ class ResultInterface(FowardOrderHandler, SenaiteHandler):
                     )
             #
             if senaite_updated:
-                self.update_astm_result(order["id"], 1)
+                self.update_astm_result(order["uid"], 1)

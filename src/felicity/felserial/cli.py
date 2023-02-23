@@ -106,6 +106,20 @@ def main():
         help="Start All"
     )
 
+    parser.add_argument(
+        "-fm",
+        "--fixmessages",
+        action="store_true",
+        help="Fix messages imported earlier"
+    )
+
+    parser.add_argument(
+        "-r",
+        "--replay",
+        action="store_true",
+        help="Repley messages import"
+    )
+
     args = parser.parse_args()
 
     # List available ports
@@ -125,6 +139,25 @@ def main():
     # run admin interface: serial -d
     if args.dashboard:
         start_dashboard()
+
+    # fixmessages imported earlier
+    if args.fixmessages:
+        from felicity.felserial.repository import OrderRepository
+        from felicity.db.models import RawData
+        raw_data = RawData.all()
+        for _raw in raw_data:
+            OrderRepository().update_fix(_raw)
+
+    # replay reimport results for raw_data
+    if args.replay:
+        from felicity.felserial.repository import OrderRepository
+        from felicity.db.models import RawData, Orders
+        for _order in Orders().all():
+            _order.delete()
+
+        raw_data = RawData.all()
+        for _raw in raw_data:
+            OrderRepository().handle_order_message(_raw.content)
 
     # run all: for sites with a single maching connected: serial -a -p /dev/ttyUSB0
     if args.all:

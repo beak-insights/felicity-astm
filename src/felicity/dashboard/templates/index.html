@@ -25,7 +25,8 @@
 >
   <div class="offcanvas-header">
     <h5 class="offcanvas-title" id="offcanvasBottomLabel">
-      Order Detail: <span id="astmorder"></span>
+      Order Detail:
+      <span id="astmorder"></span>
     </h5>
     <button
       type="button"
@@ -35,26 +36,34 @@
     ></button>
   </div>
   <div class="offcanvas-body small">
-    <div class="d-flex justify-content-start">
-      <div class="card" style="width: 18rem">
+    <div class="d-flex justify-content-between align-items-start">
+      <div class="card" style="min-width: 18rem">
         <ul class="list-group list-group-flush">
-          <li class="list-group-item">
-            KeyWord: <span id="astmkeyword"></span>
-          </li>
           <li class="list-group-item">Result: <span id="astmresult"></span></li>
+          <li class="list-group-item">
+            Keyword: <span id="astmkeyword"></span>
+          </li>
+          <li class="list-group-item">Synced: <span id="astmsynced"></span></li>
+        </ul>
+      </div>
+      <div>
+        <pre>
+          <div id="astmmessage" class="px-4"></div>
+        <pre>
+      </div>
+      <div class="card" style="min-width: 18rem">
+        <ul class="list-group list-group-flush">
           <li class="list-group-item">
             Result Date: <span id="astmresultdate"></span>
           </li>
           <li class="list-group-item">
             Created Date: <span id="astmcreateddate"></span>
           </li>
-          <li class="list-group-item">Synced: <span id="astmsynced"></span></li>
           <li class="list-group-item">
             Synced Date: <span id="astmsynceddate"></span>
           </li>
         </ul>
       </div>
-      <div id="astmmessage"></div>
     </div>
   </div>
 </div>
