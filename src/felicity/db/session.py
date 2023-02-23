@@ -16,8 +16,8 @@ def test_db_connection() -> bool:
     try:
         with Session(engine) as session:
             result = session.execute(text("""select * from orders limit 1"""))
-        logger.log("info", f"HL7DB: connection established")
+        logger.log("info", f"ASTMDB: connection established")
         return True
     except Exception as e:
-        logger.log("error", f"HL7DB: connection failed with error: {e}")
+        logger.log("error", f"ASTMDB: connection failed with error: {e}")
         return False
