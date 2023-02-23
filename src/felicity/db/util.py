@@ -39,7 +39,5 @@ class DBOrderHandler:
 
         found.update(**{
             "raw_data_uid": raw_data_uid,
-            **order,
-            "synced": found.synced,
-            "sync_date": found.sync_date,
+            **order
         })

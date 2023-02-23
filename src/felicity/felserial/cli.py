@@ -157,7 +157,7 @@ def main():
 
         raw_data = RawData.all()
         for _raw in raw_data:
-            OrderRepository().handle_order_message(_raw.content)
+            OrderRepository().handle_replay(_raw)
 
     # run all: for sites with a single maching connected: serial -a -p /dev/ttyUSB0
     if args.all:
