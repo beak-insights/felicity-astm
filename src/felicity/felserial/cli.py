@@ -9,7 +9,7 @@ from serial.tools import list_ports
 from serial.serialutil import to_bytes
 from felicity.felserial.astm import ASTMTOrderHandler
 from felicity.forward import start_fowading
-from felicity.dashboard.panel import start_dashboard
+from felicity.dashboard import start_dashboard
 
 from felicity.logger import Logger
 logger = Logger(__name__, __file__)

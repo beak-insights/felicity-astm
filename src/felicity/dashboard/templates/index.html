@@ -1,0 +1,61 @@
+{% extends "base.html" %} {% block content %}
+<table id="astmOrders" class="table table-sm table-bordered">
+  <thead>
+    <tr>
+      <th scope="col" class="select-checkbox">#</th>
+      <th scope="col">Date Created</th>
+      <th scope="col">Test ID</th>
+      <th scope="col">KeyWord</th>
+      <th scope="col">Result</th>
+      <th scope="col">Result Date</th>
+      <th scope="col">Synced</th>
+      <th scope="col">Date Synced</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr></tr>
+  </tbody>
+</table>
+
+<div
+  class="offcanvas offcanvas-bottom"
+  tabindex="-1"
+  id="offcanvasBottom"
+  aria-labelledby="offcanvasBottomLabel"
+>
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasBottomLabel">
+      Order Detail: <span id="astmorder"></span>
+    </h5>
+    <button
+      type="button"
+      class="btn-close text-reset"
+      data-bs-dismiss="offcanvas"
+      aria-label="Close"
+    ></button>
+  </div>
+  <div class="offcanvas-body small">
+    <div class="d-flex justify-content-start">
+      <div class="card" style="width: 18rem">
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item">
+            KeyWord: <span id="astmkeyword"></span>
+          </li>
+          <li class="list-group-item">Result: <span id="astmresult"></span></li>
+          <li class="list-group-item">
+            Result Date: <span id="astmresultdate"></span>
+          </li>
+          <li class="list-group-item">
+            Created Date: <span id="astmcreateddate"></span>
+          </li>
+          <li class="list-group-item">Synced: <span id="astmsynced"></span></li>
+          <li class="list-group-item">
+            Synced Date: <span id="astmsynceddate"></span>
+          </li>
+        </ul>
+      </div>
+      <div id="astmmessage"></div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

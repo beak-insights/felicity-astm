@@ -26,3 +26,7 @@ SLEEP_SUBMISSION_COUNT = 10
 POLL_BD_EVERY = 10
 
 EXCLUDE_RESULTS = ["Invalid", "ValueNotSet"]
+
+# Admin pane
+STATIC_DIR = f"{BASE_DIR}/dashboard/static"
+TEMPLATE_DIR = f"{BASE_DIR}/dashboard/templates"
