@@ -239,7 +239,10 @@ class SenaiteQueuer:
         return True
 
     def send_message(self, message):
-        logger.log("info", f"Sending message to SENAITE: {message[:50]} ...")
+        if message:
+            logger.log(
+                "info", f"Sending message to SENAITE: {message[:50]} ...")
+
         if not self.session:
             logger.log("info", "Session not started yet")
             return False

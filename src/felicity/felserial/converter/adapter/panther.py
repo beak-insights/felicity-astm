@@ -86,6 +86,9 @@ class PantherASTMAdapter(ASTMBaseAdapter):
         test_id = self.order_record["TestID"]
         assay_name = self.order_record["AssayName"]
         target = "|^^^{}^{}^".format(test_id, assay_name)
+        if test_id == "HPV":
+            assay_name = "OverallInterpretation"
+        target = "|^^^{}^{}^".format(test_id, assay_name)
         for record in records:
             if target in record and record.index(target) >= 3:
                 return record

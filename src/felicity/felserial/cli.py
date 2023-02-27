@@ -198,5 +198,70 @@ def hl7Try():
     OrderRepository().handle_order_message(hl_mess)
 
 
+def hpvTry():
+    from felicity.felserial.repository import OrderRepository
+    m1 = """
+    H|\^&|||Panther|||||Host||P|1|
+    P|5||||^^|||||||||||^|^|||||||||||||||^|^|
+    O|1|CS23-22443|cc72d06c-87de-463c-ad08-275211789126^451167|^^^HPV^HPV^^1|R|20230222142246|||||||||||||||||||F
+    R|1|^^^HPV^ICRLU^^1|181107|||||F\R||||20230222192433|
+    R|2|^^^HPV^ICInterpretation^^1|Valid|||||F\R||||20230222192433|
+    R|3|^^^HPV^AnalyteRLU^^1|2746489|||||F\R||||20230222192433|
+    R|4|^^^HPV^AnalyteSCO^^1|20.07|||||F\R||||20230222192433|
+    R|5|^^^HPV^OverallInterpretation^^1|POSITIVE|||||F\R||||20230222192433|
+    R|6|^^^HPV^Analyte Cutoff^^1||||||F\R||||20230222192433|
+    R|7|^^^HPV^IC Cutoff^^1||||||F\R||||20230222192433|
+    L|1|N
+    """
+    m2 = """
+    H|\^&|||Panther|||||Host||P|1|
+    P|4||||^^|||||||||||^|^|||||||||||||||^|^|
+    O|1|CS23-22426|bde3c3fc-714d-4e58-b372-6488dcbc3ad9^451165|^^^HPV^HPV^^1|R|20230222142246|||||||||||||||||||F
+    R|1|^^^HPV^ICRLU^^1|134779|||||F||||20230222192933|
+    R|2|^^^HPV^ICInterpretation^^1|Invalid|||||F||||20230222192933|
+    R|3|^^^HPV^AnalyteRLU^^1|0|||||F||||20230222192933|
+    R|4|^^^HPV^AnalyteSCO^^1|0.00|||||F||||20230222192933|
+    R|5|^^^HPV^OverallInterpretation^^1|Invalid|||||F||||20230222192933|
+    R|6|^^^HPV^Analyte Cutoff^^1||||||F||||20230222192933|
+    R|7|^^^HPV^IC Cutoff^^1||||||F||||20230222192933|
+    """
+    m3 = """
+    H|\^&|||Panther|||||Host||P|1|
+    P|3||||^^|||||||||||^|^|||||||||||||||^|^|
+    O|1|CS23-22444|62f9a041-d84d-4bf8-bbdc-aa6e9f9beefb^451164|^^^HPV^HPV^^1|R|20230222142246|||||||||||||||||||F
+    R|1|^^^HPV^ICRLU^^1|0|||||F\R||||20230222192433|
+    R|2|^^^HPV^ICInterpretation^^1|Valid|||||F\R||||20230222192433|
+    R|3|^^^HPV^AnalyteRLU^^1|1946583|||||F\R||||20230222192433|
+    R|4|^^^HPV^AnalyteSCO^^1|14.23|||||F\R||||20230222192433|
+    R|5|^^^HPV^OverallInterpretation^^1|POSITIVE|||||F\R||||20230222192433|
+    R|6|^^^HPV^Analyte Cutoff^^1||||||F\R||||20230222192433|
+    R|7|^^^HPV^IC Cutoff^^1||||||F\R||||20230222192433|
+    """
+    m4 = """
+    H|\^&|||Panther|||||Host||P|1|
+    P|2||||^^|||||||||||^|^|||||||||||||||^|^|
+    O|1|CS23-22445|f8b13ba0-72bf-4b89-82a3-040dc39e9ac4^451161|^^^HPV^HPV^^1|R|20230222142246|||||||||||||||||||F
+    R|1|^^^HPV^ICRLU^^1|261202|||||F\R||||20230222192933|
+    R|2|^^^HPV^ICInterpretation^^1|Valid|||||F\R||||20230222192933|
+    R|3|^^^HPV^AnalyteRLU^^1|0|||||F\R||||20230222192933|
+    R|4|^^^HPV^AnalyteSCO^^1|0.00|||||F\R||||20230222192933|
+    R|5|^^^HPV^OverallInterpretation^^1|Negative|||||F\R||||20230222192933|
+    R|6|^^^HPV^Analyte Cutoff^^1||||||F\R||||20230222192933|
+    R|7|^^^HPV^IC Cutoff^^1||||||F\R||||20230222192933|
+    """
+    m5 = """
+    H|\^&|||Panther|||||Host||P|1|
+    P|1||||^^|||||||||||^|^|||||||||||||||^|^|
+    O|1|662047|40ee8544-6076-4046-8dc0-601c18863cd7^37468|^^^qHIV-1^HIV-1^^1|R|20190808013102|||||||||||||||||||F
+    R|1|^^^qHIV-1^HIV-1^^1|Not Detected|copies/mL||||F||||20190808052856
+    R|2|^^^qHIV-1^ICResult^^1|15|||||F||||20190808052856
+    R|3|^^^qHIV-1^ResultValid^^1|Valid|||||F||||20190808052856
+    R|4|^^^qHIV-1^HIV-1LogBase10^^1|Not Detected|||||F||||20190808052856
+    """
+    messgz = [m1, m2, m3, m4, m5]
+    for ms in messgz:
+        OrderRepository().handle_order_message(ms)
+
+
 if __name__ == "__main__":
-    hl7Try()
+    hpvTry()
