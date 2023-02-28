@@ -56,6 +56,7 @@ class OrderRepository:
             logger.log("info", f"order for update: {order}")
             self.database.update_order_fix({
                 "order_id": order['order_id'],
+                "result": order['result'],
                 "raw_message": order['raw_message']
             }, raw_data.uid)
 
