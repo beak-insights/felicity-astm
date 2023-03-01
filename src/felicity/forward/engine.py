@@ -159,11 +159,12 @@ class SenaiteHandler:
             self.error_handler("create", url, response)
             return False, None
 
-    def do_work_for_order(self, request_id, result, keyword=None):
+    def do_work_for_order(self, order_uid, request_id, result, keyword=None):
         self._auth_session()
 
         searched, search_payload = self.search_analyses_by_request_id(
-            request_id)
+            request_id
+        )
         # 'getResult': '', 'getResultCaptureDate': None, 'getSubmittedBy': None, 'getKeyword': 'XXXXXXX'
 
         submitted = False
@@ -178,6 +179,7 @@ class SenaiteHandler:
 
         search_items = search_payload.get("items")
         if not len(search_items) > 0:
+            FowardOrderHandler().update_astm_result(order_uid, 5)
             return False
 
         search_data = search_items[0]
@@ -185,7 +187,8 @@ class SenaiteHandler:
 
         logger.log("info", f"SenaiteHandler:  ---submission---")
         submitted, submission = self.update_resource(
-            search_data.get("uid"), submit_payload)
+            search_data.get("uid"), submit_payload
+        )
         # Result is not None
         # 'SubmittedBy': 'system_daemon', ResultCaptureDate is not None, DateSubmitted == ResultCaptureDate
 
@@ -363,12 +366,14 @@ class ResultInterface(FowardOrderHandler, SenaiteHandler):
                         senaite_updated = True
                     else:
                         senaite_updated = self.do_work_for_order(
+                            order["uid"],
                             order["order_id"],
                             result,
                             order["keywork"]
                         )
                 else:
                     senaite_updated = self.do_work_for_order(
+                        order["uid"],
                         order["order_id"],
                         result,
                         order["keywork"]
