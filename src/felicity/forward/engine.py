@@ -21,6 +21,7 @@ from felicity.config import (
     SEND_TO_QUEUE,
     API_MAX_ATTEMPTS,
     API_ATTEMPT_INTERVAL,
+    RESULT_SUBMISSION_COUNT,
 )
 from felicity.db.session import engine, test_db_connection
 from felicity.forward.result_parser import ResultParser
@@ -44,11 +45,14 @@ class FowardOrderHandler:
     def fetch_astm_results(self):
         logger.log("info", f"AstmOrderHandler: Fetching astm result orders ...")
         select_stmt = text(
-            """select * from orders o where synced=0 and result not in ("Invalid", "ValueNotSet")"""
+            f"""select * from orders o where synced=0 and result not in ("Invalid", "ValueNotSet") limit :limit"""
         )
+        update_line = {
+            "limit": RESULT_SUBMISSION_COUNT,
+        }
 
         with Session(engine) as session:
-            result = session.execute(select_stmt)
+            result = session.execute(select_stmt, update_line)
 
         return self.astm_result_to_dataframe(result.all(), result.keys())
 

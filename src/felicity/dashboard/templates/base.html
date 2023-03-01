@@ -8,7 +8,7 @@
       rel="stylesheet"
     />
     <link
-      href="{{ url_for('static', path='/datatables-1.13.2/datatables.min.css') }}"
+      href="{{ url_for('static', path='/gridjs/mermaid.min.css') }}"
       rel="stylesheet"
     />
 
@@ -53,7 +53,11 @@
   ></script>
   <script
     type="text/javascript"
-    src="{{ url_for('static', path='/datatables-1.13.2/datatables.min.js') }}"
+    src="{{ url_for('static', path='/gridjs/gridjs.umd.js') }}"
+  ></script>
+  <script
+    type="text/javascript"
+    src="{{ url_for('static', path='/gridjs/selection.umd.js') }}"
   ></script>
   <script
     type="text/javascript"

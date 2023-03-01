@@ -22,8 +22,13 @@ API_ATTEMPT_INTERVAL = 30
 # If Not SENAITE.JSONAPI a.k.a SEND_TO_QUEUE = True
 VERIFY_RESULT = False
 SLEEP_SECONDS = 5
+# logger every ?
 SLEEP_SUBMISSION_COUNT = 10
-POLL_BD_EVERY = 10
+# check the database every :
+POLL_BD_EVERY = 1
+# on each check, limit results to
+RESULT_SUBMISSION_COUNT = 10
+
 
 EXCLUDE_RESULTS = ["Invalid", "ValueNotSet"]
 
