@@ -110,7 +110,7 @@ class SenaiteHandler:
             else:
                 logger.log(
                     "error", f"SenaiteConn: connection failed with {url}")
-                self.error_handler(None, url, response)
+                self.error_handler(url, response)
                 return False
         except Exception as e:
             logger.log(
@@ -118,12 +118,9 @@ class SenaiteHandler:
             return False
 
     @staticmethod
-    def error_handler(action=None, url=None, res=None):
+    def error_handler(url=None, res=None):
         logger.log(
             "info", f"SenaiteHandler: Error Status Code: {res.status_code} Reason: {res.reason}")
-        if action:
-            logger.log(
-                "info", f"SenaiteHandler: Error Resource ({action}) {url}")
         logger.log("info", f"SenaiteHandler: Error Detail {res.text}")
 
     @staticmethod
@@ -144,7 +141,7 @@ class SenaiteHandler:
             data = self.decode_response(response.text)
             return True, data
         else:
-            self.error_handler("search_analyses_by_csid", search_url, response)
+            self.error_handler(search_url, response)
             return False, None
 
     def update_resource(self, uid, payload):
@@ -156,7 +153,7 @@ class SenaiteHandler:
             data = self.decode_response(response.text)
             return True, data
         else:
-            self.error_handler("create", url, response)
+            self.error_handler(url, response)
             return False, None
 
     def do_work_for_order(self, order_uid, request_id, result, keyword=None):
