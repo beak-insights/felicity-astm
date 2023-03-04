@@ -14,12 +14,12 @@ class OrderRepository:
         self._database = None
 
     def handle_order_message(self, message):
+        # persist raw_data
+        rawdata_uid = self.database.persist_raw(message)
+
         payloads = self.converter.process(message)
         if isinstance(payloads, dict):
             payloads = [payloads]
-
-        # persist raw_data
-        rawdata_uid = self.database.persist_raw(message)
 
         # persist message splits as orders
         for order in payloads:
