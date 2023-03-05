@@ -22,7 +22,12 @@ class ASTMSerialHandler:
 
         msgs = []
         for block in blocks:
-            msgs += self.adapt_message(block, protocol)
+            try:
+                msgs += self.adapt_message(block, protocol)
+            except Exception as e:
+                logger.log("info", "msgs: {}".format(msgs))
+                logger.log("info", "block: {}".format(block))
+
         return msgs
 
     def split_message_blocks(self, message):
