@@ -25,8 +25,8 @@ class ASTMSerialHandler:
             try:
                 msgs += self.adapt_message(block, protocol)
             except Exception as e:
-                logger.log("info", "msgs: {}".format(msgs))
-                logger.log("info", "block: {}".format(block))
+                logger.log("error", "Exception::msgs: {}".format(msgs))
+                logger.log("error", "Exception::block: {}".format(block))
 
         return msgs
 
