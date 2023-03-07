@@ -27,6 +27,7 @@ class ASTMSerialHandler:
             except Exception as e:
                 logger.log("error", "Exception::msgs: {}".format(msgs))
                 logger.log("error", "Exception::block: {}".format(block))
+                logger.log("error", "Exception::type: {}".format(type(block)))
 
         return msgs
 
