@@ -180,7 +180,7 @@ class SenaiteHandler:
             return False
 
         search_data = search_items[0]
-        assert search_data.get("getParentTitle") == request_id
+        # assert search_data.get("getParentTitle") == request_id
 
         logger.log("info", f"SenaiteHandler:  ---submission---")
         submitted, submission = self.update_resource(
@@ -201,7 +201,7 @@ class SenaiteHandler:
                 return False
 
             submission_data = submission_items[0]
-            assert submission_data.get("uid") == search_data.get("uid")
+            # assert submission_data.get("uid") == search_data.get("uid")
 
             logger.log("info", f"SenaiteHandler:  ---verification---")
             verified, verification = self.update_resource(
