@@ -235,4 +235,12 @@ tail output logs:
     $ sudo supervisorctl tail -f <program> stdout
     or tail -f /var/log/<program>.out.log
     
+    
+View Serial Dashboard
+    
+    $ serial -d
+    
+   
+Navigate to the dashboard [http://127.0.0.1:9999](http://127.0.0.1:9999)
+    
 Done!
