@@ -52,24 +52,124 @@ Install the package as a simlink in order to local changes tracking:
     $ pip install -e .
     
     
-ALl should be up by now: Check
+Check for the latest device connected to your computer by:
+    
+    $ s -lh /dev/
+    
+
+### Simulation Tests
+Simulation test with socat:
+
+    $ sudo apt-get install socat
+    $ socat -d -d pty,raw,echo=0 pty,raw,echo=0
+    2019/05/27 09:49:54 socat[19584] N PTY is /dev/pts/5
+    2019/05/27 09:49:54 socat[19584] N PTY is /dev/pts/6
+    2019/05/27 09:49:54 socat[19584] N starting data transfer loop with FDs [5,5] and [7,7]
+
+    
+Start the receiver (serial):
+
+    $ serial -s -p /dev/pts/6
+    
+    
+Simulate the receiver (instrument):
+
+    $ echo -n -e '\x05' > /dev/pts/5
+    Opening session
+    -> <ENQ>
+    Initiating Establishment Phase ...
+    Ready for Transfer Phase ...
+    <- <ACK>
+       
+    $ echo -n -e '\x021This is my first and last frame\x03F0\x0D\x0A' > /dev/pts/5
+    -> <STX>1This is my first and last frame<ETX>F0<CR><LF>
+     Frame accepted
+    Transfer phase completed:
+    --------------------------------------------------------------------------------
+    This is my first and last frame
+    --------------------------------------------------------------------------------
+    Closing session: neutral state
+    <- <ACK>
+    
+    $ echo -n -e '\x05' > /dev/pts/5
+    $ echo -n -e '\x021This is my first frame\x17F0\x0D\x0A' > /dev/pts/5
+    $ echo -n -e '\x022This is my second frame\x17F0\x0D\x0A' > /dev/pts/5
+    $ echo -n -e '\x023This is my third frame\x17F0\x0D\x0A' > /dev/pts/5
+    $ echo -n -e '\x024This is my fourth and last frame\x03F0\x0D\x0A' > /dev/pts/5
+    Opening session
+    -> <ENQ>
+    Initiating Establishment Phase ...
+    Ready for Transfer Phase ...
+    <- <ACK>
+    -> <STX>1This is my first frame<ETB>F0<CR><LF>
+     Frame accepted
+     Waiting for a new frame ...
+    <- <ACK>
+    -> <STX>2This is my second frame<ETB>F0<CR><LF>
+     Frame accepted
+     Waiting for a new frame ...
+    <- <ACK>
+    -> <STX>3This is my third frame<ETB>F0<CR><LF>
+     Frame accepted
+     Waiting for a new frame ...
+    <- <ACK>
+    -> <STX>4This is my fourth and last frame<ETX>F0<CR><LF>
+     Frame accepted
+    Transfer phase completed:
+    --------------------------------------------------------------------------------
+    This is my first frame
+    This is my second frame
+    This is my third frame
+    This is my fourth and last frame
+    --------------------------------------------------------------------------------
+    Closing session: neutral state
+    <- <ACK>
+ 
+ 
+### Real Insrtument Setup
+Serial ports are mostly set with a baudrate of 9600 by default, but you can modify these settings with stty command, if needed. Eg:
+    
+    $ sudo stty -F /dev/ttyUSB0 9600
+    
+    
+The same command, but without specifying the baudrate will give you the actual configuration
+ 
+    $ sudo stty -F /dev/ttyUSB0
+    speed 9600 baud; line = 0;
+    -brkint -imaxbel
+    
+Al should be up by now: Check
 
     serial -s -p /dev/ttyUSB0
     # Listening .... etc
     
     
+### Serial Management with supervisor
 Setup supervisor for easier script management manager
 
-    # install
-    sudo apt update && sudo apt install supervisor
+installation:
+
+    $ sudo apt update && sudo apt install supervisor
     
-    # check status
-    sudo systemctl status supervisor
     
-    # add programs
-    sudo nano /etc/supervisor/conf.d/astm_serial.conf
+check status:
+
+    $ sudo systemctl status supervisor
     
-    # add any of the following programs based onavailable serial devices 
+open supervisor config file:
+
+    $ sudo nano /etc/supervisor/conf.d/astm_serial.conf
+    
+    
+Copy and Paster any of the following programs based onavailable serial devices 
+
+    [program:result_forward]
+    command=/usr/bin/python3 /usr/local/bin/serial -f
+    autostart=true
+    autorestart=true
+    stderr_logfile=/var/log/result_forward.err.log
+    stdout_logfile=/var/log/result_forward.out.log
+    
     [program:serial_usb0]
     command=/usr/bin/python3 /usr/local/bin/serial -s -p /dev/ttyUSB0
     autostart=true
@@ -98,29 +198,41 @@ Setup supervisor for easier script management manager
     stderr_logfile=/var/log/serial_s1.err.log
     stdout_logfile=/var/log/serial_s1.out.log
    
-    # inform supervisor of our new programs
-    sudo supervisorctl reread
+   
+inform supervisor of our new programs:
+
+    $ sudo supervisorctl reread
     
-    # tell superviror enact any changes
-    sudo supervisorctl update
+
+tell superviror enact any changes:
+
+    $ sudo supervisorctl update
     
     
-Supervisor management
-    # check program status
-    sudo supervisorctl status
+##### Supervisor management commands
+check program status:
+
+    $ sudo supervisorctl status
     
-    # reload all
-    sudo supervisorctl reload
     
-    # reload/ retart a single program
-    sudo supervisorctl restart <program>
+reload all services
+
+    $ sudo supervisorctl reload
+
+
+reload or retart a single program:
     
-    # tail error logs
-    sudo supervisorctl tail -f <program> stderr
+    $ sudo supervisorctl restart <program>
+    
+
+tail error logs:
+
+    $ sudo supervisorctl tail -f <program> stderr
     or tail -f /var/log/<program>.err.log
     
-    # tail output logs
-    sudo supervisorctl tail -f <program> stdout
+tail output logs:
+
+    $ sudo supervisorctl tail -f <program> stdout
     or tail -f /var/log/<program>.out.log
     
 Done!
