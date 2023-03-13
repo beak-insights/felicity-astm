@@ -135,7 +135,7 @@ class SenaiteHandler:
         # searching using an ID.
         search_url = f"{self.api_url}/search?getRequestID={request_id}&catalog=bika_analysis_catalog"
         logger.log(
-            "info", f"SenaiteHandler: Searching for analysis with getRequestID {request_id}")
+            "info", f"SenaiteHandler: Searching ... {search_url}")
         response = self.session.get(search_url)
         if response.status_code == 200:
             data = self.decode_response(response.text)
@@ -164,20 +164,22 @@ class SenaiteHandler:
         )
         # 'getResult': '', 'getResultCaptureDate': None, 'getSubmittedBy': None, 'getKeyword': 'XXXXXXX'
 
+        if not searched:
+            return False
+
+        search_items = search_payload.get("items", [])
+        if len(search_items) == 0:
+            logger.log(
+                "info", f"SenaiteHandler: search for {request_id} did not find any matches")
+            FowardOrderHandler().update_astm_result(order_uid, 5)
+            return False
+
         submitted = False
         submit_payload = {
             "transition": "submit",
             "Result": result,
             "InterimFields": []
         }
-
-        if not searched:
-            return False
-
-        search_items = search_payload.get("items")
-        if not len(search_items) > 0:
-            FowardOrderHandler().update_astm_result(order_uid, 5)
-            return False
 
         search_data = search_items[0]
         # assert search_data.get("getParentTitle") == request_id
