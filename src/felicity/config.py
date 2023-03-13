@@ -2,9 +2,9 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # DB Connections
-DB_NAME = "felicity_instrument"
-DB_USER = "felicity"
-DB_PASSWORD = "FAccess#2023"
+DB_NAME = "astm_results"
+DB_USER = "nmrl"
+DB_PASSWORD = "password"
 DB_HOST = "localhost:3306"
 
 # Forward app settings
