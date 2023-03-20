@@ -12,7 +12,8 @@ engine = create_engine(db_url, pool_pre_ping=True, echo=False, future=True)
 # session = scoped_session(sessionmaker(bind=engine, autocommit=True))
 
 
-def test_db_connection() -> bool:
+def test_db_connection() -> bool:    
+    logger.log("info", f"ASTMDB: intiating connection: {db_url.replace(DB_PASSWORD, '******').replace(DB_USER, '******')}")
     try:
         with Session(engine) as session:
             result = session.execute(text("""select * from orders limit 1"""))

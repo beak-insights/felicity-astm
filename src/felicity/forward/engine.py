@@ -101,15 +101,16 @@ class SenaiteHandler:
     def test_senaite_connection(self) -> bool:
         self._auth_session()
         url = f"{self.api_url}/"
+        logger.log("info", f"SenaiteConn: intiating connection to: {url}")
         try:
             response = self.session.post(url)
             if response.status_code == 200:
                 logger.log(
-                    "info", f"SenaiteConn: connection established with {url}")
+                    "info", f"SenaiteConn: connection established")
                 return True
             else:
                 logger.log(
-                    "error", f"SenaiteConn: connection failed with {url}")
+                    "error", f"SenaiteConn: connection failed")
                 self.error_handler(url, response)
                 return False
         except Exception as e:
