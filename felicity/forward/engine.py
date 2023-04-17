@@ -155,7 +155,7 @@ class SenaiteHandler:
             return True, data
         else:
             self.error_handler(url, response)
-            return False, None
+            return False, self.decode_response(response.text)
 
     def do_work_for_order(self, order_uid, request_id, result, keyword=None):
         self._auth_session()
@@ -191,6 +191,9 @@ class SenaiteHandler:
         )
         # Result is not None
         # 'SubmittedBy': 'system_daemon', ResultCaptureDate is not None, DateSubmitted == ResultCaptureDate
+        
+        if not submitted:
+            logger.log("info", f"SUbmission Responce for checking :  {submission}")
 
         if self.also_verify:
             if not submitted:

@@ -22,8 +22,8 @@ class OrderRepository:
             payloads = [payloads]
 
         # persist message splits as orders
-        for order in payloads:
-            order = self._to_order(order)
+        for payload in payloads:
+            order = self._to_order(payload)
             order_id = order.get("order_id", None)
             order_result = order.get("result", None)
             logger.log(
