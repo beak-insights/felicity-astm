@@ -29,8 +29,25 @@ POLL_BD_EVERY = 1
 # on each check, limit results to
 RESULT_SUBMISSION_COUNT = 10
 
-
+# Results
 EXCLUDE_RESULTS = ["Invalid", "ValueNotSet"]
+
+# Keyword mappings
+KEYWORDS_MAPPING = {
+    # Abbott
+    "HIV1mlDBS": ["Abbott", "HIV06ml", "VLDBS", "VLPLASMA", ],
+    "HIV1.0mlDBS": ["Abbott", "HIV06ml", "VLDBS", "VLPLASMA", ],
+    "HIV06ml": ["Abbott", "HIV06ml", "VLDBS", "VLPLASMA", ],
+    "HIV0.2ml": ["Abbott", "HIV06ml", "VLDBS", "VLPLASMA", ],
+    # Roche Cobas
+    "HI2DIL96": ["HI2CAP96", "VLDBS", "VLPLASMA", ],
+    "HI2DIL48": ["HI2CAP96", "VLDBS", "VLPLASMA", ],
+    "HI2CAP48": ["HI2CAP96", "VLDBS", "VLPLASMA", ],
+    "HI2CAP96": ["HI2CAP96", "VLDBS", "VLPLASMA", ],
+    # Hologic Panther
+    "qHIV-1": ["ViralLoad", "VLDBS", "VLPLASMA", ],
+    "HIV-1": ["ViralLoad", "VLDBS", "VLPLASMA", ],
+}
 
 # Admin pane
 STATIC_DIR = f"{BASE_DIR}/dashboard/static"

@@ -18,6 +18,7 @@ from felicity.config import (
     SLEEP_SECONDS,
     SLEEP_SUBMISSION_COUNT,
     EXCLUDE_RESULTS,
+    KEYWORDS_MAPPING,
     SEND_TO_QUEUE,
     API_MAX_ATTEMPTS,
     API_ATTEMPT_INTERVAL,
@@ -156,6 +157,26 @@ class SenaiteHandler:
         else:
             self.error_handler(url, response)
             return False, self.decode_response(response.text)
+        
+    def resolve_by_keywords(self, keyword, results):
+        if len(results) == 0: 
+            return False, None
+        
+        mappings = KEYWORDS_MAPPING.get(keyword, None)
+        if not mapping: 
+            return False, None
+        
+        states = ["unassigned", "assigned"]
+        results = list(filter(lambda r: r["review_state"] in states and r["getKeyword"] in mappings, results))
+        
+        if len(results) == 1: return True, results[0]
+        if len(results) > 1:
+            logger.log("info", f"SenaiteHandler: More than 1 anlysis found for keyword: {keyword}")
+            return False, None
+        
+        logger.log("info", f"SenaiteHandler: No anlysis found for keyword: {keyword}")
+        return False, None
+        
 
     def do_work_for_order(self, order_uid, request_id, result, keyword=None):
         self._auth_session()
@@ -163,18 +184,19 @@ class SenaiteHandler:
         searched, search_payload = self.search_analyses_by_request_id(
             request_id
         )
-        # 'getResult': '', 'getResultCaptureDate': None, 'getSubmittedBy': None, 'getKeyword': 'XXXXXXX'
 
         if not searched:
             return False
 
         search_items = search_payload.get("items", [])
-        if len(search_items) == 0:
+
+        found, search_data = self.resolve_by_keywords(keyword, search_items)
+        if not found:
             logger.log(
-                "info", f"SenaiteHandler: search for {request_id} did not find any matches")
+                "info", f"SenaiteHandler: search for {request_id}, {keyword} did not find any matches")
             FowardOrderHandler().update_astm_result(order_uid, 5)
             return False
-
+        
         submitted = False
         submit_payload = {
             "transition": "submit",
@@ -182,18 +204,13 @@ class SenaiteHandler:
             "InterimFields": []
         }
 
-        search_data = search_items[0]
-        # assert search_data.get("getParentTitle") == request_id
-
-        logger.log("info", f"SenaiteHandler:  ---submission---")
+        logger.log("info", f"SenaiteHandler:  ---submitting---")
         submitted, submission = self.update_resource(
             search_data.get("uid"), submit_payload
         )
-        # Result is not None
-        # 'SubmittedBy': 'system_daemon', ResultCaptureDate is not None, DateSubmitted == ResultCaptureDate
         
         if not submitted:
-            logger.log("info", f"SUbmission Responce for checking :  {submission}")
+            logger.log("info", f"Submission Responce for checking :  {submission}")
 
         if self.also_verify:
             if not submitted:
