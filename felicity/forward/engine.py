@@ -162,9 +162,9 @@ class SenaiteHandler:
         if len(results) == 0: 
             return False, None
         
-        mappings = KEYWORDS_MAPPING.get(keyword, None)
-        if not mapping: 
-            return False, None
+        mappings = KEYWORDS_MAPPING.get(keyword, [keyword])
+        mappings.append(keyword)
+        mappings = list(set(mappings))
         
         states = ["unassigned", "assigned"]
         results = list(filter(lambda r: r["review_state"] in states and r["getKeyword"] in mappings, results))
