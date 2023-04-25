@@ -46,7 +46,7 @@ class FowardOrderHandler:
     def fetch_astm_results(self):
         logger.log("info", f"AstmOrderHandler: Fetching astm result orders ...")
         select_stmt = text(
-            f"""select * from orders o where synced=0 and result not in ("Invalid", "ValueNotSet") limit :limit"""
+            f"""select * from orders o where synced=0 limit :limit"""
         )
         update_line = {
             "limit": RESULT_SUBMISSION_COUNT,
@@ -162,6 +162,8 @@ class SenaiteHandler:
         if len(results) == 0: 
             return False, None
         
+        logger.log("info", f"SenaiteHandler: Resolving analysis containing keyword {keyword} ...")
+        
         mappings = KEYWORDS_MAPPING.get(keyword, [keyword])
         mappings.append(keyword)
         mappings = list(set(mappings))
@@ -169,7 +171,10 @@ class SenaiteHandler:
         states = ["unassigned", "assigned"]
         results = list(filter(lambda r: r["review_state"] in states and r["getKeyword"] in mappings, results))
         
-        if len(results) == 1: return True, results[0]
+        if len(results) == 1: 
+            logger.log("info", f"SenaiteHandler: Analysis with keyword {keyword} successfully resolved ...")
+            return True, results[0]
+        
         if len(results) > 1:
             logger.log("info", f"SenaiteHandler: More than 1 anlysis found for keyword: {keyword}")
             return False, None
@@ -204,13 +209,13 @@ class SenaiteHandler:
             "InterimFields": []
         }
 
-        logger.log("info", f"SenaiteHandler:  ---submitting---")
+        logger.log("info", f"SenaiteHandler:  ---submitting result--- ")
         submitted, submission = self.update_resource(
             search_data.get("uid"), submit_payload
         )
         
         if not submitted:
-            logger.log("info", f"Submission Responce for checking :  {submission}")
+            logger.log("info", f"Submission Responce for checking : {submission}")
 
         if self.also_verify:
             if not submitted:
@@ -226,7 +231,7 @@ class SenaiteHandler:
             submission_data = submission_items[0]
             # assert submission_data.get("uid") == search_data.get("uid")
 
-            logger.log("info", f"SenaiteHandler:  ---verification---")
+            logger.log("info", f"SenaiteHandler:  ---verifying result---")
             verified, verification = self.update_resource(
                 submission_data.get("uid"), verify_payload
             )
@@ -357,19 +362,34 @@ class SenaiteQueuer:
 
 class ResultInterface(FowardOrderHandler, SenaiteHandler):
     def run(self):
-        database_reachable = test_db_connection()
-        if not self.test_senaite_connection() or not database_reachable:
+        
+        if not test_db_connection():
+            logger.log("info", f"Failed to connect to db, backing off a little ...")            
             return
+        
+        if not self.test_senaite_connection():
+            logger.log("info", f"Failed to connectto Senaite, backing off a little ...")            
+            return
+        
+        logger.log("info", f"All connections were successfully estabished :)")   
+        
         to_exclude = [x.strip().lower() for x in EXCLUDE_RESULTS]
+        
         orders = self.fetch_astm_results()
-        if not len(orders) > 0:
+        total = len(orders)
+        if not total > 0:
             logger.log("info", f"AstmOrderHandler: No orders at the moment :)")
+        
+        logger.log("info", f"AstmOrderHandler: {total} order are pending syncing ...")
 
         for index, order in orders.iterrows():
+            
             if index > 0 and index % SLEEP_SUBMISSION_COUNT == 0:
                 logger.log("info", f"ResultInterface:  ---sleeping---")
                 time.sleep(SLEEP_SECONDS)
                 logger.log("info", f"ResultInterface:  ---waking---")
+            
+            logger.log("info", f"AstmOrderHandler: Processing {index} of {total} ...")
 
             senaite_updated = False
             if SEND_TO_QUEUE:

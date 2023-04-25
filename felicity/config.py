@@ -24,8 +24,8 @@ VERIFY_RESULT = False
 SLEEP_SECONDS = 5
 # logger every ?
 SLEEP_SUBMISSION_COUNT = 10
-# check the database every :
-POLL_BD_EVERY = 1
+# check the database every xx minutes :
+POLL_BD_EVERY = 10
 # on each check, limit results to
 RESULT_SUBMISSION_COUNT = 10
 
@@ -47,6 +47,7 @@ KEYWORDS_MAPPING = {
     # Hologic Panther
     "qHIV-1": ["ViralLoad", "VLDBS", "VLPLASMA", ],
     "HIV-1": ["ViralLoad", "VLDBS", "VLPLASMA", ],
+    "HPV": ["HPV",]
 }
 
 # Admin pane

@@ -27,16 +27,16 @@ setup(
         "pyserial==3.5",
         "alembic==1.9.2",
         "pymysql==1.0.2",
-        "pandas==1.3.4",
+        "pandas==1.1.5",
         "requests==2.24.0",
         "sqlalchemy==1.4.31",
         "schedule==0.6.0",
-        "fastapi==0.92.0",
+        "fastapi==0.83.0",
         "uvicorn==0.16.0",
-        "jinja2==3.1.2",
-        "ndg-httpsclient",
-        "pyopenssl",
-        "pyasn1"
+        "jinja2==3.0.3",
+        # "ndg-httpsclient",
+        # "pyopenssl",
+        # "pyasn1"
     ],   
     python_requires='>=3.6',
     # List additional groups of dependencies here (e.g. development
