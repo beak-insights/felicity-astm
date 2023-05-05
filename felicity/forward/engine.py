@@ -179,7 +179,9 @@ class SenaiteHandler:
             logger.log("info", f"SenaiteHandler: More than 1 anlysis found for keyword: {keyword}")
             return False, None
         
-        logger.log("info", f"SenaiteHandler: No anlysis found for keyword: {keyword}")
+        obtained = list(map(lambda r: (r["getKeyword"], r["review_state"]), results))
+
+        logger.log("info", f"SenaiteHandler: No anlysis found for keyword: {keyword} with state in {states}. Obtained: {obtained}")
         return False, None
         
 
