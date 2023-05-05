@@ -159,6 +159,7 @@ class SenaiteHandler:
             return False, self.decode_response(response.text)
         
     def resolve_by_keywords(self, keyword, results):
+        original = results
         if len(results) == 0: 
             return False, None
         
@@ -179,7 +180,7 @@ class SenaiteHandler:
             logger.log("info", f"SenaiteHandler: More than 1 anlysis found for keyword: {keyword}")
             return False, None
         
-        obtained = list(map(lambda r: (r["getKeyword"], r["review_state"]), results))
+        obtained = list(map(lambda r: (r["getKeyword"], r["review_state"]), original))
 
         logger.log("info", f"SenaiteHandler: No anlysis found for keyword: {keyword} with state in {states}. Obtained: {obtained}")
         return False, None
