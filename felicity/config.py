@@ -8,7 +8,7 @@ DB_PASSWORD = "password"
 DB_HOST = "localhost:3306"
 
 # Forward app settings
-SENAITE_HOST = "192.168.0.69:80"
+SENAITE_HOST = "xxx.xxx.xxx.xxx:80"
 SENAITE_BASE_URL = f"http://{SENAITE_HOST}/senaite"
 SENAITE_API_URL = f"{SENAITE_BASE_URL}/@@API/senaite/v1"
 SENAITE_USER = "system_daemon"
@@ -27,7 +27,7 @@ SLEEP_SUBMISSION_COUNT = 10
 # check the database every xx minutes :
 POLL_BD_EVERY = 10
 # on each check, limit results to
-RESULT_SUBMISSION_COUNT = 10
+RESULT_SUBMISSION_COUNT = 250
 
 # Results
 EXCLUDE_RESULTS = ["Invalid", "ValueNotSet"]
@@ -47,7 +47,7 @@ KEYWORDS_MAPPING = {
     # Hologic Panther
     "qHIV-1": ["ViralLoad", "VLDBS", "VLPLASMA", ],
     "HIV-1": ["ViralLoad", "VLDBS", "VLPLASMA", ],
-    "HPV": ["HPV",]
+    "HPV": ["HPV", "HPV01", ]
 }
 
 # Admin pane
