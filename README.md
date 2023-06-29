@@ -19,13 +19,19 @@ Make sure you have Mysql/MariaDb installed
     grant all privileges on databse_name.* TO 'username'@'%' identified by '<password>';
 
     # finally 
-    fush privileges;
+    flush privileges;
     
 
-Make sure you have installed python 3.9.5 or higher and pip3 for this project:
+Make sure you have installed Python 3.9.5 or higher and pip3 for this project:
+You can download Miniconda for ease of installation and accept licence and answer yes everywhere
 
-    $ python3 --version
-    Python 3.X
+    $ wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-s390x.sh
+    $ bash Miniconda3-latest-Linux-s390x.sh
+
+Check python version 
+
+    $ python3 --version or python --version
+    Python 3.x.x
     
     git clone https://github.com/NMRL-Zimbabwe/astm-improved.git
     cd astm-improved && sudo su
@@ -160,8 +166,8 @@ open supervisor config file:
 
     $ sudo nano /etc/supervisor/conf.d/astm_serial.conf
     
-    
-Copy and Paster any of the following programs based onavailable serial devices 
+
+Copy and Paste any of the following programs based on available serial devices 
 
     [program:result_forward]
     command=/usr/bin/python3 /usr/local/bin/serial -f
@@ -197,7 +203,14 @@ Copy and Paster any of the following programs based onavailable serial devices
     autorestart=true
     stderr_logfile=/var/log/serial_s1.err.log
     stdout_logfile=/var/log/serial_s1.out.log
-   
+
+
+If you used miniconda to install python modify the above `command` to point to miniconda accordingly.
+
+    command=/home/administrator/miniconda3/bin/python /home/administrator/miniconda3/bin/serial -f
+    command=/home/administrator/miniconda3/bin/python /home/administrator/miniconda3/bin/serial -s -p /dev/ttyUSB0
+    command=/home/administrator/miniconda3/bin/python /home/administrator/miniconda3/bin/serial -s -p /dev/ttyUSB1
+
    
 inform supervisor of our new programs:
 
