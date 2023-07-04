@@ -29,6 +29,9 @@ POLL_BD_EVERY = 10
 # on each check, limit results to
 RESULT_SUBMISSION_COUNT = 250
 
+# Trial Hack for Hologic EID
+RESOLVE_HOLOGIC_EID = False
+
 # Results
 EXCLUDE_RESULTS = ["Invalid", "ValueNotSet"]
 

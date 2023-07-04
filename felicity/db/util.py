@@ -1,5 +1,6 @@
 from felicity.db.models import Orders, RawData
 from felicity.logger import Logger
+from felicity.helpers import has_special_char
 
 logger = Logger(__name__, __file__)
 
@@ -10,22 +11,6 @@ class DBOrderHandler:
         raw_data = RawData.create(**{"content": str(message)})
         return raw_data.uid
 
-    def _has_special_char(order_id):
-        """
-        Check if order_id contains any special characters other than hyphens.
-
-        Args:
-            order_id (str): The order ID to check.
-
-        Returns:
-            bool: True if order_id contains special characters other than hyphens, False otherwise.
-        """
-        special_chars = list("~`!@#$%^&*()+=[]{}\\|;:'\",.<>/?")
-        for char in order_id:
-            if char in special_chars and char != "-":
-                return True
-        return False
-
     def persist_order(self, order, raw_data_uid):
         order_id = order["order_id"]
         filters = {
@@ -33,6 +18,9 @@ class DBOrderHandler:
         }
         found = Orders.get(**filters)
         if found:
+            # EID do repeat so need some hack to save more here
+
+            #
             logger.log(
                 "info", f"order with the same order_id ({order_id}) is already persisted, skipping ...")
             return
@@ -40,8 +28,7 @@ class DBOrderHandler:
         Orders.create(**{
             "raw_data_uid": raw_data_uid,
             **order,
-            "synced": 5 if self._has_special_char(order_id) else 0
-
+            "synced": 5 if has_special_char(order_id) else 0
         })
 
     def update_order_fix(self, order, raw_data_uid):
@@ -58,5 +45,5 @@ class DBOrderHandler:
         found.update(**{
             "raw_data_uid": raw_data_uid,
             **order,
-            "synced": 5 if self._has_special_char(order_id) else 0
+            "synced": 5 if has_special_char(order_id) else 0
         })

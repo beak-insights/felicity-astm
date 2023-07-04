@@ -28,3 +28,11 @@ def file_setup(log_file_path, log_file):
     else:
         create_dir(log_file_path)
         register_file(log_file)
+
+
+def has_special_char(order_id):
+    special_chars = list("~`!@#$%^&*()+=[]{}\\|;:'\",.<>/?")
+    for char in order_id:
+        if char in special_chars and char != "-":
+            return True
+    return False

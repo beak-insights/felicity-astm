@@ -8,7 +8,18 @@ INTEPRETATIONS = {
 }
 
 
-class IntResultHandler:
+
+class BaseParser:
+    def try_cast(self, val):
+        """Thorough check if current result is strictly text or numeric"""
+        try:
+            val = int(val)
+        except ValueError:
+            pass
+        return val
+
+
+class IntResultHandler(BaseParser):
     def __init__(self, result, test_unit):
         self.result = result
         self.test_unit = test_unit
@@ -37,19 +48,12 @@ class IntResultHandler:
 
     def multiplier(self, multiple):
         """derive padding from 'xxx*exp.unit'"""
-        return eval('1' + '0'*abs(multiple))
+        return eval('1' + '0' * abs(multiple))
 
     def round(self, val):
         """For results with >= .5 round up else round down"""
         return round(val)
 
-    def try_cast(self, val):
-        """Thorough check if current result is strictly text or numeric"""
-        try:
-            val = int(val)
-        except ValueError:
-            pass
-        return val
 
 
 class StringResultParser:
@@ -76,7 +80,33 @@ class ResultParser(IntResultHandler, StringResultParser):
 
         multiplier = self.multiplier(self.quotient)
         if self.quotient > 0:
-            return val*multiplier
+            return val * multiplier
 
         # self.quotient < 0
-        return self.round(val/multiplier)
+        return self.round(val / multiplier)
+
+
+class HologicEIDInterpreter(BaseParser):
+    value = None
+
+    def __init__(self, value):
+        self.value = value
+
+    @property
+    def output(self):
+        val = self.try_cast(self.value)
+        if isinstance(val, str):
+            if self.value in ["Not Detected", "Target Not Detected"]:
+                return "Negative"
+            elif self.value in ["<833", "< 833"]:
+                return "Weak Positive"
+            elif self.value in ["Invalid", "invalid"]:
+                return "Invalid"
+        else:
+            if self.value <= 1900:
+                return "Weak Positive"
+            elif 1901 <= self.value <= 10000000:
+                return "Strong Positive"
+            else:
+                return "Strong Positive"
+        return None

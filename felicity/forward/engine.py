@@ -23,11 +23,11 @@ from felicity.config import (
     API_MAX_ATTEMPTS,
     API_ATTEMPT_INTERVAL,
     RESULT_SUBMISSION_COUNT,
+    RESOLVE_HOLOGIC_EID,
 )
 from felicity.db.session import engine, test_db_connection
-from felicity.forward.result_parser import ResultParser
+from felicity.forward.result_parser import ResultParser, HologicEIDInterpreter
 from felicity.logger import Logger
-
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 logger = Logger(__name__, __file__)
@@ -71,7 +71,8 @@ class FowardOrderHandler:
     @staticmethod
     def update_astm_result(order_id: int, lims_sync_status: int):
         logger.log(
-            "info", f"AstmOrderHandler: Updating astm result orders with uid: {order_id} with synced: {lims_sync_status} ...")
+            "info",
+            f"AstmOrderHandler: Updating astm result orders with uid: {order_id} with synced: {lims_sync_status} ...")
         update_stmt = text(
             """update orders set synced = :status, sync_date = :date_updated where uid = :uid""")
 
@@ -157,39 +158,48 @@ class SenaiteHandler:
         else:
             self.error_handler(url, response)
             return False, self.decode_response(response.text)
-        
+
+    def get_one_for_keyword(self, values, keyword, is_eid):
+        if len(values) == 1:
+            logger.log("info", f"SenaiteHandler: Analysis with keyword {keyword} successfully resolved ...")
+            return True, values[0], is_eid
+
+        if len(values) > 1:
+            logger.log("info", f"SenaiteHandler: More than 1 anlysis found for keyword: {keyword}")
+            return False, values, is_eid
+
     def resolve_by_keywords(self, keyword, results):
         original = results
-        if len(results) == 0: 
-            return False, None
-        
+        if len(results) == 0:
+            return False, None, False
+
         logger.log("info", f"SenaiteHandler: Resolving analysis containing keyword {keyword} ...")
-        
+
         mappings = KEYWORDS_MAPPING.get(keyword, [keyword])
         mappings.append(keyword)
         mappings = list(set(mappings))
-        
+
         states = ["unassigned", "assigned"]
         results = list(filter(lambda r: r["review_state"] in states and r["getKeyword"] in mappings, results))
-        
-        if len(results) == 1: 
-            logger.log("info", f"SenaiteHandler: Analysis with keyword {keyword} successfully resolved ...")
-            return True, results[0]
-        
-        if len(results) > 1:
-            logger.log("info", f"SenaiteHandler: More than 1 anlysis found for keyword: {keyword}")
-            return False, None
-        
+
+        found, payload, is_eid = self.get_one_for_keyword(keyword, results, False)
+        if found:
+            return found, payload, is_eid
+
+        if RESOLVE_HOLOGIC_EID:
+            eids = list(filter(lambda r: r["review_state"] in states and r["getKeyword"] in ["EID"], results))
+            return self.get_one_for_keyword(keyword, eids, True)
+
         obtained = list(map(lambda r: (r["getKeyword"], r["review_state"]), original))
 
-        logger.log("info", f"SenaiteHandler: No anlysis found for keyword: {keyword} with state in {states}. Obtained: {obtained}")
-        return False, None
-        
+        logger.log("info", f"SenaiteHandler: No anlysis found for keyword: {keyword} with state in {states}. \
+         Obtained: {obtained}")
+        return False, None, False
 
     def do_work_for_order(self, order_uid, request_id, result, keyword=None):
         self._auth_session()
 
-        searched, search_payload = self.search_analyses_by_request_id(
+        searched, search_payload, is_eid = self.search_analyses_by_request_id(
             request_id
         )
 
@@ -198,13 +208,18 @@ class SenaiteHandler:
 
         search_items = search_payload.get("items", [])
 
-        found, search_data = self.resolve_by_keywords(keyword, search_items)
+        found, search_data, is_eid = self.resolve_by_keywords(keyword, search_items)
         if not found:
             logger.log(
                 "info", f"SenaiteHandler: search for {request_id}, {keyword} did not find any matches")
             FowardOrderHandler().update_astm_result(order_uid, 5)
             return False
-        
+
+        if is_eid:
+            result = HologicEIDInterpreter(result).output
+            if not result:
+                return False
+
         submitted = False
         submit_payload = {
             "transition": "submit",
@@ -216,7 +231,7 @@ class SenaiteHandler:
         submitted, submission = self.update_resource(
             search_data.get("uid"), submit_payload
         )
-        
+
         if not submitted:
             logger.log("info", f"Submission Responce for checking : {submission}")
 
@@ -365,33 +380,33 @@ class SenaiteQueuer:
 
 class ResultInterface(FowardOrderHandler, SenaiteHandler):
     def run(self):
-        
+
         if not test_db_connection():
-            logger.log("info", f"Failed to connect to db, backing off a little ...")            
+            logger.log("info", f"Failed to connect to db, backing off a little ...")
             return
-        
+
         if not self.test_senaite_connection():
-            logger.log("info", f"Failed to connectto Senaite, backing off a little ...")            
+            logger.log("info", f"Failed to connectto Senaite, backing off a little ...")
             return
-        
-        logger.log("info", f"All connections were successfully estabished :)")   
-        
+
+        logger.log("info", f"All connections were successfully estabished :)")
+
         to_exclude = [x.strip().lower() for x in EXCLUDE_RESULTS]
-        
+
         orders = self.fetch_astm_results()
         total = len(orders)
         if not total > 0:
             logger.log("info", f"AstmOrderHandler: No orders at the moment :)")
-        
+
         logger.log("info", f"AstmOrderHandler: {total} order are pending syncing ...")
 
         for index, order in orders.iterrows():
-            
+
             if index > 0 and index % SLEEP_SUBMISSION_COUNT == 0:
                 logger.log("info", f"ResultInterface:  ---sleeping---")
                 time.sleep(SLEEP_SECONDS)
                 logger.log("info", f"ResultInterface:  ---waking---")
-            
+
             logger.log("info", f"AstmOrderHandler: Processing {index} of {total} ...")
 
             senaite_updated = False
