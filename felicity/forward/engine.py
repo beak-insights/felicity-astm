@@ -168,6 +168,8 @@ class SenaiteHandler:
             logger.log("info", f"SenaiteHandler: More than 1 anlysis found for keyword: {keyword}")
             return False, values, is_eid
 
+        return False, None, is_eid
+
     def resolve_by_keywords(self, keyword, results):
         original = results
         if len(results) == 0:
@@ -187,7 +189,7 @@ class SenaiteHandler:
             return found, payload, is_eid
 
         if RESOLVE_HOLOGIC_EID:
-            eids = list(filter(lambda r: r["review_state"] in states and r["getKeyword"] in ["EID"], results))
+            eids = list(filter(lambda r: r["review_state"] in states and r["getKeyword"] in ["EID"], original))
             return self.get_one_for_keyword(eids, keyword, True)
 
         obtained = list(map(lambda r: (r["getKeyword"], r["review_state"]), original))
