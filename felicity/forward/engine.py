@@ -182,13 +182,13 @@ class SenaiteHandler:
         states = ["unassigned", "assigned"]
         results = list(filter(lambda r: r["review_state"] in states and r["getKeyword"] in mappings, results))
 
-        found, payload, is_eid = self.get_one_for_keyword(keyword, results, False)
+        found, payload, is_eid = self.get_one_for_keyword(results, keyword, False)
         if found:
             return found, payload, is_eid
 
         if RESOLVE_HOLOGIC_EID:
             eids = list(filter(lambda r: r["review_state"] in states and r["getKeyword"] in ["EID"], results))
-            return self.get_one_for_keyword(keyword, eids, True)
+            return self.get_one_for_keyword(eids, keyword, True)
 
         obtained = list(map(lambda r: (r["getKeyword"], r["review_state"]), original))
 
