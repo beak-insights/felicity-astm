@@ -199,7 +199,7 @@ class SenaiteHandler:
     def do_work_for_order(self, order_uid, request_id, result, keyword=None):
         self._auth_session()
 
-        searched, search_payload, is_eid = self.search_analyses_by_request_id(
+        searched, search_payload = self.search_analyses_by_request_id(
             request_id
         )
 
