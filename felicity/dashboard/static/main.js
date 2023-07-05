@@ -107,7 +107,7 @@ document.onreadystatechange = () => {
             order.keywork,
             order.result,
             order.result_date,
-            order.synced ? "synced" : "pending",
+            order.synced === 0 ? "pending" : order.synced === 1 ? "synced" : "failed",
             order.sync_date,
             null,
           ]);

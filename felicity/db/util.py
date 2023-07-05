@@ -2,7 +2,24 @@ from felicity.db.models import Orders, RawData
 from felicity.logger import Logger
 from felicity.helpers import has_special_char
 
+from sqlalchemy import text
+from felicity.db.session import engine
+from sqlalchemy.orm import Session
+import pandas as pd
+
 logger = Logger(__name__, __file__)
+
+
+def fetch_astm_results():
+    select_stmt = text(f"""select * from orders""")
+
+    with Session(engine) as session:
+        result = session.execute(select_stmt)
+
+    return pd.DataFrame(
+        [self.sanitise(line) for line in result.all()],
+        columns=result.keys()
+    )
 
 
 class DBOrderHandler:
