@@ -216,5 +216,19 @@ def hpvTry():
     OrderRepository().handle_order_message(ms)
 
 
+def err():
+    from felicity.felserial.repository import OrderRepository
+    ms = """
+    H|\^&|||m2000^8.1.9.0^275022096^H1P1O1R1C1L1|||||||P|1|20230717163415
+    P|1
+    O|1|DB&E&23-33E22|DB&E&23-33E22^WS23-11684^D2|^^^HIV1mlDBS^HIV1.0mlDBS|||||||||||||||||||||F
+    R|1|^^^HIV1mlDBS^HIV1.0mlDBS^381303^10003187^^F|Not detected|Copies / mL||||R||BRIAN PAKARIMWA^BRIAN PAKARIMWA||20230713214311|275022096
+    R|2|^^^HIV1mlDBS^HIV1.0mlDBS^381303^10003187^^I|Target not detected|||||R||BRIAN PAKARIMWA^BRIAN PAKARIMWA||20230713214311|275022096
+    R|3|^^^HIV1mlDBS^HIV1.0mlDBS^381303^10003187^^P|-1.00|cycle number||||R||BRIAN PAKARIMWA^BRIAN PAKARIMWA||20230713214311|275022096
+    L|1
+    """
+    OrderRepository().handle_order_message(ms)
+
+
 if __name__ == "__main__":
     hpvTry()

@@ -45,7 +45,7 @@ class DBOrderHandler:
         Orders.create(**{
             "raw_data_uid": raw_data_uid,
             **order,
-            "synced": 5 if has_special_char(order_id) else 0
+            "synced": True if has_special_char(order_id) else False
         })
 
     def update_order_fix(self, order, raw_data_uid):
@@ -62,5 +62,5 @@ class DBOrderHandler:
         found.update(**{
             "raw_data_uid": raw_data_uid,
             **order,
-            "synced": 5 if has_special_char(order_id) else 0
+            "synced": True if has_special_char(order_id) else False
         })
