@@ -136,7 +136,7 @@ class SenaiteHandler:
         @return dict
         """
         # searching using an ID.
-        search_url = f"{self.api_url}/search?getRequestID={request_id}&catalog=bika_analysis_catalog"
+        search_url = f"{self.api_url}/search?getRequestID={request_id.upper()}&catalog=bika_analysis_catalog"
         logger.log(
             "info", f"SenaiteHandler: Searching ... {search_url}")
         response = self.session.get(search_url)
