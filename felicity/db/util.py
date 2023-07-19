@@ -10,6 +10,14 @@ import pandas as pd
 logger = Logger(__name__, __file__)
 
 
+def sanitise(incoming):
+    incoming = list(incoming)
+    for index, item in enumerate(incoming):
+        if isinstance(item, str):
+            incoming[index] = item.replace(';', ' ').strip()
+    return incoming
+
+
 def fetch_astm_results():
     select_stmt = text(f"""select * from orders""")
 
@@ -17,8 +25,7 @@ def fetch_astm_results():
         result = session.execute(select_stmt)
 
     return pd.DataFrame(
-        [self.sanitise(line) for line in result.all()],
-        columns=result.keys()
+        [sanitise(line) for line in result.all()], columns=result.keys()
     )
 
 
