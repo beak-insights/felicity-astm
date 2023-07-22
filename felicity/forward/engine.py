@@ -113,7 +113,7 @@ class SenaiteHandler:
             else:
                 logger.log(
                     "error", f"SenaiteConn: connection failed")
-                self.error_handler(url, response)
+                self.error_handler(url, response, None)
                 return False
         except Exception as e:
             logger.log(
@@ -126,10 +126,8 @@ class SenaiteHandler:
         logger.log("info", f"SenaiteHandler: Error Detail::{request_id}:: {res.text}")
 
     @staticmethod
-    def decode_response(response, request_id):
-        json_data = json.loads(response)
-        logger.log("info", f"SenaiteHandler: Response::{request_id}:: {json_data}")
-        return json_data
+    def decode_response(response):
+        return json.loads(response)
 
     def search_analyses_by_request_id(self, request_id):
         """Searches senaite's Analysis portal for results
@@ -145,7 +143,7 @@ class SenaiteHandler:
             data = self.decode_response(response.text)
             return True, data
         else:
-            self.error_handler(search_url, response)
+            self.error_handler(search_url, response, request_id)
             return False, None
 
     def update_resource(self, uid, payload, request_id):
@@ -155,11 +153,11 @@ class SenaiteHandler:
         response = self.session.post(url, json=payload)
         logger.log("info", f"SenaiteHandler: Responce {response.text}")
         if response.status_code == 200:
-            data = self.decode_response(response.text, request_id)
+            data = self.decode_response(response.text)
             return True, data
         else:
             self.error_handler(url, response, request_id)
-            return False, self.decode_response(response.text, request_id)
+            return False, self.decode_response(response.text)
 
     def get_one_for_keyword(self, values, keyword, is_eid):
         if len(values) == 1:
