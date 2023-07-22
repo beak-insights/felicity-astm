@@ -147,10 +147,10 @@ class SenaiteHandler:
             self.error_handler(search_url, response)
             return False, None
 
-    def update_resource(self, uid, payload):
+    def update_resource(self, uid, payload, request_id):
         """ create a new resource in senaite: single or bundled """
         url = f"{self.api_url}/update/{uid}"
-        logger.log("info", f"SenaiteHandler: Updating resource: {url}")
+        logger.log("info", f"SenaiteHandler: Updating resource: {url} for {request_id} with {payload}")
         response = self.session.post(url, json=payload)
         if response.status_code == 200:
             data = self.decode_response(response.text)
@@ -231,7 +231,7 @@ class SenaiteHandler:
 
         logger.log("info", f"SenaiteHandler:  ---submitting result--- ")
         submitted, submission = self.update_resource(
-            search_data.get("uid"), submit_payload
+            search_data.get("uid"), submit_payload, request_id
         )
 
         if not submitted:
@@ -253,7 +253,7 @@ class SenaiteHandler:
 
             logger.log("info", f"SenaiteHandler:  ---verifying result---")
             verified, verification = self.update_resource(
-                submission_data.get("uid"), verify_payload
+                submission_data.get("uid"), verify_payload, request_id
             )
 
             # DateVerified is not None, 'VerifiedBy': 'system_daemon'
