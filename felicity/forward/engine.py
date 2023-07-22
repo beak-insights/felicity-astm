@@ -121,14 +121,15 @@ class SenaiteHandler:
             return False
 
     @staticmethod
-    def error_handler(url=None, res=None):
-        logger.log(
-            "info", f"SenaiteHandler: Error Status Code: {res.status_code} Reason: {res.reason}")
-        logger.log("info", f"SenaiteHandler: Error Detail {res.text}")
+    def error_handler(url=None, res=None, request_id=None):
+        logger.log("info", f"SenaiteHandler: Error Status Codel::{request_id}:: {res.status_code} Reason: {res.reason}")
+        logger.log("info", f"SenaiteHandler: Error Detail::{request_id}:: {res.text}")
 
     @staticmethod
-    def decode_response(response):
-        return json.loads(response)
+    def decode_response(response, request_id):
+        json_data = json.loads(response)
+        logger.log("info", f"SenaiteHandler: Response::{request_id}:: {json_data}")
+        return json_data
 
     def search_analyses_by_request_id(self, request_id):
         """Searches senaite's Analysis portal for results
@@ -152,12 +153,13 @@ class SenaiteHandler:
         url = f"{self.api_url}/update/{uid}"
         logger.log("info", f"SenaiteHandler: Updating resource: {url} for {request_id} with {payload}")
         response = self.session.post(url, json=payload)
+        logger.log("info", f"SenaiteHandler: Responce {response.text}")
         if response.status_code == 200:
-            data = self.decode_response(response.text)
+            data = self.decode_response(response.text, request_id)
             return True, data
         else:
-            self.error_handler(url, response)
-            return False, self.decode_response(response.text)
+            self.error_handler(url, response, request_id)
+            return False, self.decode_response(response.text, request_id)
 
     def get_one_for_keyword(self, values, keyword, is_eid):
         if len(values) == 1:
