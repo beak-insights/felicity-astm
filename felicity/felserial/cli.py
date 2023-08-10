@@ -140,7 +140,7 @@ def main():
     if args.dashboard:
         start_dashboard()
 
-    # fixmessages imported earlier
+    # fix messages imported earlier
     if args.fixmessages:
         from felicity.felserial.repository import OrderRepository
         from felicity.db.models import RawData

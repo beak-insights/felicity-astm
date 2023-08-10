@@ -24,3 +24,9 @@ async def home(request: Request):
 @app.get("/api/orders")
 async def api_orders(request: Request):
     return Orders.all()
+
+@app.post("/api/orders/resync/{uid}")
+async def api_orders(uid):
+    order = Orders.find(uid)
+    order.update(synced=0)
+    return order
