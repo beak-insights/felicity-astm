@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Boolean
+from sqlalchemy import Column, ForeignKey, Integer, SmallInteger, String, Boolean
 from sqlalchemy.dialects.mysql import LONGTEXT
 from felicity.db.base_model import DBModel
 
@@ -23,7 +23,7 @@ class Orders(DBModel):
     unit = Column(String(20), nullable=True)
     comment = Column(String(255), nullable=True)
     is_sync_allowed = Column(Boolean, nullable=False, default=True)
-    synced = Column(Boolean, nullable=False, default=False)
+    synced = Column(SmallInteger, nullable=False, default=False)
     sync_date = Column(String(25), nullable=True)
     sync_comment = Column(String(255), nullable=True)
     raw_message = Column(LONGTEXT, nullable=True)

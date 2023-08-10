@@ -61,7 +61,7 @@ class DBModel(AllFeaturesMixin, TimestampsMixin):
             session.delete(self)
             session.flush()
             session.commit()
-
+            
     @classmethod
     def all(cls):
         with Session(engine) as session:
@@ -85,16 +85,28 @@ class DBModel(AllFeaturesMixin, TimestampsMixin):
         return found_or
 
     @classmethod
+    def find_all(cls, filters, limit=None):
+        stmt = cls.smart_query(filters)
+        if limit:
+            stmt = stmt.limit(limit)
+        with Session(engine) as session:
+            results = session.execute(stmt)
+            _all = results.scalars().all()
+        return _all
+
+    @classmethod
     def get(cls, **kwargs):
         stmt = cls.where(**kwargs)
         with Session(engine) as session:
             results = session.execute(stmt)
             found = results.scalars().first()
         return found
-
+    
     @classmethod
-    def get_all(cls, **kwargs):
+    def get_all(cls, limit, **kwargs):
         stmt = cls.where(**kwargs)
+        if limit:
+            stmt = stmt.limit(limit)
         with Session(engine) as session:
             results = session.execute(stmt)
             _all = results.scalars().all()

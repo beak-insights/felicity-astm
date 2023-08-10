@@ -1,11 +1,12 @@
 import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# DB Connections
+# Database
 DB_NAME = "astm_results"
 DB_USER = "nmrl"
 DB_PASSWORD = "password"
 DB_HOST = "localhost:3306"
+DB_CLEAR_DATA_OVER_DAYS = 14
 
 # Forward app settings
 SENAITE_HOST = "xxx.xxx.xxx.xxx:80"

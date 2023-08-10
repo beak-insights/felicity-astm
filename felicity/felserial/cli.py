@@ -232,3 +232,6 @@ def err():
 
 if __name__ == "__main__":
     hpvTry()
+    # err()
+    # hl7Try()
+    # trial()

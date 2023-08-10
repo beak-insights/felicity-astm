@@ -4,7 +4,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from felicity.config import STATIC_DIR, TEMPLATE_DIR
 from felicity.db.models import Orders
-from felicity.db.util import fetch_astm_results
 
 templates = Jinja2Templates(directory=TEMPLATE_DIR)
 
@@ -24,5 +23,4 @@ async def home(request: Request):
 
 @app.get("/api/orders")
 async def api_orders(request: Request):
-    # data = Orders.all()
-    return fetch_astm_results()
+    return Orders.all()

@@ -2,13 +2,11 @@ import ssl
 import json
 import time
 from time import sleep
-import pandas as pd
 from datetime import datetime
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from requests.auth import HTTPBasicAuth
-from sqlalchemy import text
-from sqlalchemy.orm import Session
+from felicity.db.models import Orders
 from felicity.config import (
     SENAITE_BASE_URL,
     SENAITE_API_URL,
@@ -43,48 +41,30 @@ class FowardOrderHandler:
                 incoming[index] = item.replace(';', ' ').strip()
         return incoming
 
-    def fetch_astm_results(self):
-        logger.log("info", f"AstmOrderHandler: Fetching astm result orders ...")
-        select_stmt = text(
-            f"""select * from orders o where synced=0 limit :limit"""
-        )
-        update_line = {
-            "limit": RESULT_SUBMISSION_COUNT,
-        }
-
-        with Session(engine) as session:
-            result = session.execute(select_stmt, update_line)
-
-        return self.astm_result_to_dataframe(result.all(), result.keys())
-
-    def astm_result_to_dataframe(self, results, keys):
-        # Aso skip those whose raw_data payload len is > 1200
-        return pd.DataFrame(
-            [self.sanitise(line) for line in results],
-            columns=keys
-        )
-
+    def fetch_astm_results(self): return Orders.get_all(limit=RESULT_SUBMISSION_COUNT, synced=0)
+    
     @staticmethod
-    def astm_result_to_csv(data_frame):
-        data_frame.to_csv("astm_results.csv", index=False)
+    def astm_result_to_csv(data_frame): data_frame.to_csv("astm_results.csv", index=False)
 
     @staticmethod
     def update_astm_result(order_id: int, lims_sync_status: int):
         logger.log(
             "info",
             f"AstmOrderHandler: Updating astm result orders with uid: {order_id} with synced: {lims_sync_status} ...")
-        update_stmt = text(
-            """update orders set synced = :status, sync_date = :date_updated where uid = :uid""")
-
-        update_line = {
-            "uid": order_id,
-            "status": lims_sync_status,
-            "date_updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        }
-
-        with Session(engine) as session:
-            session.execute(update_stmt, update_line)
-            session.commit()
+        
+        order_result = Orders.find(order_id)
+        if order_result:
+            order_result.update(
+                synced=lims_sync_status,
+                sync_date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            )
+            logger.log(
+                "info",
+                f"AstmOrderHandler: Updated astm result orders with uid: {order_id} with synced: {lims_sync_status}...")
+        else:
+            logger.log(
+                "error",
+                f"AstmOrderHandler: Failed to update astm result orders with uid: {order_id} with synced: {lims_sync_status}...")
 
 
 class SenaiteHandler:
@@ -384,30 +364,30 @@ class ResultInterface(FowardOrderHandler, SenaiteHandler):
     def run(self):
 
         if not test_db_connection():
-            logger.log("info", f"Failed to connect to db, backing off a little ...")
+            logger.log("info", "Failed to connect to db, backing off a little ...")
             return
 
         if not self.test_senaite_connection():
-            logger.log("info", f"Failed to connectto Senaite, backing off a little ...")
+            logger.log("info", "Failed to connectto Senaite, backing off a little ...")
             return
 
-        logger.log("info", f"All connections were successfully estabished :)")
+        logger.log("info", "All connections were successfully estabished :)")
 
         to_exclude = [x.strip().lower() for x in EXCLUDE_RESULTS]
 
         orders = self.fetch_astm_results()
         total = len(orders)
-        if not total > 0:
-            logger.log("info", f"AstmOrderHandler: No orders at the moment :)")
+        if total <= 0:
+            logger.log("info", "AstmOrderHandler: No orders at the moment :)")
 
         logger.log("info", f"AstmOrderHandler: {total} order are pending syncing ...")
 
         for index, order in orders.iterrows():
 
             if index > 0 and index % SLEEP_SUBMISSION_COUNT == 0:
-                logger.log("info", f"ResultInterface:  ---sleeping---")
+                logger.log("info", "ResultInterface:  ---sleeping---")
                 time.sleep(SLEEP_SECONDS)
-                logger.log("info", f"ResultInterface:  ---waking---")
+                logger.log("info", "ResultInterface:  ---waking---")
 
             logger.log("info", f"AstmOrderHandler: Processing {index} of {total} ...")
 
@@ -417,7 +397,7 @@ class ResultInterface(FowardOrderHandler, SenaiteHandler):
                 ).send_message(order['raw_message'])
             else:
                 # Parse the result object before sending to LIMS
-                result_parser = ResultParser(order["result"], order["unit"])
+                result_parser = ResultParser(order.result, order.unit)
                 result = str(result_parser.output)
 
                 if isinstance(result, str):
@@ -426,18 +406,18 @@ class ResultInterface(FowardOrderHandler, SenaiteHandler):
                         senaite_updated = True
                     else:
                         senaite_updated = self.do_work_for_order(
-                            order["uid"],
-                            order["order_id"],
+                            order.uid,
+                            order.order_id,
                             result,
-                            order["keywork"]
+                            order.keywork
                         )
                 else:
                     senaite_updated = self.do_work_for_order(
-                        order["uid"],
-                        order["order_id"],
+                        order.uid,
+                        order.order_id,
                         result,
-                        order["keywork"]
+                        order.keywork
                     )
             #
             if senaite_updated:
-                self.update_astm_result(order["uid"], 1)
+                self.update_astm_result(order.uid, 1)
