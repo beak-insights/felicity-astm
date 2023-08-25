@@ -133,7 +133,6 @@ class SenaiteHandler:
         url = f"{self.api_url}/update/{uid}"
         logger.log("info", f"SenaiteHandler: Updating resource: {url} for {request_id} with {payload}")
         response = self.session.post(url, json=payload)
-        logger.log("info", f"SenaiteHandler: Responce {response.text}")
         if response.status_code == 200:
             data = self.decode_response(response.text)
             return True, data
