@@ -27,7 +27,6 @@ setup(
         "pyserial==3.5",
         "alembic==1.9.2",
         "pymysql==1.0.2",
-        "pandas==1.1.5",
         "requests==2.24.0",
         "sqlalchemy==1.4.31",
         "schedule==0.6.0",

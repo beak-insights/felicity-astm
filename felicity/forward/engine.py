@@ -382,7 +382,7 @@ class ResultInterface(FowardOrderHandler, SenaiteHandler):
 
         logger.log("info", f"AstmOrderHandler: {total} order are pending syncing ...")
 
-        for index, order in orders.iterrows():
+        for index, order in enumerate(orders):
 
             if index > 0 and index % SLEEP_SUBMISSION_COUNT == 0:
                 logger.log("info", "ResultInterface:  ---sleeping---")
