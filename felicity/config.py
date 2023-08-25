@@ -51,7 +51,7 @@ KEYWORDS_MAPPING = {
     # Hologic Panther
     "qHIV-1": ["ViralLoad", "VLDBS", "VLPLASMA", ],
     "HIV-1": ["ViralLoad", "VLDBS", "VLPLASMA", ],
-    "HPV": ["HPV", "HPV01", ]
+    "HPV": ["HPV", ]
 }
 
 # Admin pane

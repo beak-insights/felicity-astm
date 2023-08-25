@@ -26,6 +26,7 @@ from felicity.config import (
 from felicity.db.session import engine, test_db_connection
 from felicity.forward.result_parser import ResultParser, HologicEIDInterpreter
 from felicity.logger import Logger
+from felicity.helpers import has_special_char
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 logger = Logger(__name__, __file__)
@@ -47,7 +48,7 @@ class FowardOrderHandler:
     def astm_result_to_csv(data_frame): data_frame.to_csv("astm_results.csv", index=False)
 
     @staticmethod
-    def update_astm_result(order_id: int, lims_sync_status: int):
+    def update_astm_result(order_id: int, lims_sync_status: int, sync_comment: str = ""):
         logger.log(
             "info",
             f"AstmOrderHandler: Updating astm result orders with uid: {order_id} with synced: {lims_sync_status} ...")
@@ -56,6 +57,7 @@ class FowardOrderHandler:
         if order_result:
             order_result.update(
                 synced=lims_sync_status,
+                sync_comment=sync_comment,
                 sync_date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             )
             logger.log(
@@ -180,6 +182,10 @@ class SenaiteHandler:
 
     def do_work_for_order(self, order_uid, request_id, result, keyword=None):
         self._auth_session()
+        
+        if has_special_char(request_id):
+            FowardOrderHandler().update_astm_result(order_uid, 2)
+            return False
 
         searched, search_payload = self.search_analyses_by_request_id(
             request_id
