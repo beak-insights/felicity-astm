@@ -22,6 +22,8 @@ from felicity.config import (
     API_ATTEMPT_INTERVAL,
     RESULT_SUBMISSION_COUNT,
     RESOLVE_HOLOGIC_EID,
+    INCLUDE_RESULT_REMARK,
+    RESULT_REMARK
 )
 from felicity.db.session import engine, test_db_connection
 from felicity.forward.result_parser import ResultParser, HologicEIDInterpreter
@@ -213,6 +215,8 @@ class SenaiteHandler:
             "Result": result,
             "InterimFields": []
         }
+        if INCLUDE_RESULT_REMARK:
+            submit_payload["Remarks"] = RESULT_REMARK
 
         logger.log("info", f"SenaiteHandler:  ---submitting result--- ")
         submitted, submission = self.update_resource(

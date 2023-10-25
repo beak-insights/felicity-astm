@@ -16,7 +16,7 @@ logger = Logger(__name__, __file__)
 
 """Serial Command Line Tools
 
-Insatallation: pip instal -e .
+Installation: pip instal -e .
 Usage: serial --help
 """
 

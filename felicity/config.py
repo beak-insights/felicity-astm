@@ -6,6 +6,8 @@ DB_NAME = "astm_results"
 DB_USER = "nmrl"
 DB_PASSWORD = "password"
 DB_HOST = "localhost:3306"
+
+# delete db data synced over  xxx days ago:
 DB_CLEAR_DATA_OVER_DAYS = 14
 
 # Forward app settings
@@ -34,7 +36,11 @@ RESULT_SUBMISSION_COUNT = 250
 RESOLVE_HOLOGIC_EID = False
 
 # Results
-EXCLUDE_RESULTS = ["Invalid", "ValueNotSet"]
+EXCLUDE_RESULTS = ["ValueNotSet"] # "Invalid",
+
+# Result Commens
+INCLUDE_RESULT_REMARK = False
+RESULT_REMARK = "** This sample was tested at XXXX"
 
 # Keyword mappings
 KEYWORDS_MAPPING = {
@@ -57,3 +63,5 @@ KEYWORDS_MAPPING = {
 # Admin pane
 STATIC_DIR = f"{BASE_DIR}/dashboard/static"
 TEMPLATE_DIR = f"{BASE_DIR}/dashboard/templates"
+
+
