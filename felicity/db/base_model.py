@@ -103,7 +103,7 @@ class DBModel(AllFeaturesMixin, TimestampsMixin):
         return found
     
     @classmethod
-    def get_all(cls, limit, **kwargs):
+    def get_all(cls, limit=None, **kwargs):
         stmt = cls.where(**kwargs)
         if limit:
             stmt = stmt.limit(limit)
